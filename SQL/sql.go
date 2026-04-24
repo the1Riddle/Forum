@@ -23,6 +23,7 @@ func main() {
 	//UserTable(db)
 	//AddUser(db)
 	// DeleteUser(db,4)
+	ChatTable(db)
 	ReadUsers(db)
 
 }
@@ -43,6 +44,26 @@ func UserTable(db *sql.DB) {
 
 	fmt.Println("Users table created successfully")
 }
+
+
+func ChatTable(db *sql.DB) {
+	createTable := `
+	CREATE TABLE IF NOT EXISTS Chats (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		fromemail TEXT,
+		toemail TEXT,
+		message TEXT,
+		time TEXT
+	);`
+
+	_, err := db.Exec(createTable)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Chats table created successfully")
+}
+
 
 func AddUser(db *sql.DB) {
 	query := `INSERT INTO users(email, name, password) VALUES(?, ?, ?)`

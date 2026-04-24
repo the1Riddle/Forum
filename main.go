@@ -37,8 +37,29 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
+func LoggOut(w http.ResponseWriter, r *http.Request) {
+
+	session, _ := store.Get(r, "session-name")
+
+	// Clear session values
+	session.Values = make(map[interface{}]interface{})
+
+	// Destroy cookie
+	session.Options.MaxAge = -1
+	session.Options.Path = "/"
+
+	// Save session changes (important)
+	session.Save(r, w)
+
+	// Redirect (must be last, and no writes before it)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+
+
 func main (){
 	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/loggout",LoggOut)
 
 	fmt.Println("Server running at http://localhost:8080")
 
