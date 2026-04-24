@@ -21,7 +21,10 @@ func main() {
 	fmt.Println("SQLite connected successfully")
 
 	//UserTable(db)
-	AddUser(db)
+	//AddUser(db)
+	// DeleteUser(db,4)
+	ReadUsers(db)
+
 }
 
 func UserTable(db *sql.DB) {
@@ -51,4 +54,55 @@ func AddUser(db *sql.DB) {
 	fmt.Println("User added successfully")
 }
 
+func ReadUsers(db *sql.DB) {
+	query := `SELECT id, email, name, password FROM users`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var email, name, password string
+
+		err := rows.Scan(&id, &email, &name, &password)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("ID:", id)
+		fmt.Println("Email:", email)
+		fmt.Println("Name:", name)
+		fmt.Println("Password:", password)
+		fmt.Println("------------------------")
+	}
+
+	// Always check for errors after iteration
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+}
+
+
+ func DeleteUser(db *sql.DB, id int) {
+	query := `DELETE FROM users WHERE id = ?`
+
+	result, err := db.Exec(query, id)
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	if rowsAffected == 0 {
+		fmt.Println("No user found with that ID")
+	} else {
+		fmt.Println("User deleted successfully")
+	}
+} 
 
