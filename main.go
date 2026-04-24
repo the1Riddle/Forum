@@ -3,6 +3,7 @@ package  main
 import (
 "net/http"
 "github.com/gorilla/sessions"
+"html/template"
 "fmt"
 
 )
@@ -10,11 +11,22 @@ import (
 
   var store = sessions.NewCookieStore([]byte("secret-key")) 
 
+var templates = template.Must(template.ParseFiles("htmltemplates/loggin.html"))
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+
+  func LoginPage(w http.ResponseWriter, r *http.Request) {
+	err := templates.ExecuteTemplate(w, "loggin.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	//http.Redirect(w, r, "/Dashboard", http.StatusSeeOther)
+}
+
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// only allow "/"
-	if r.URL.Path != "/" {
+	if r.URL.Path != "/Dashboard" {
 		http.NotFound(w, r)
 		return
 	}
@@ -58,8 +70,9 @@ func LoggOut(w http.ResponseWriter, r *http.Request) {
 
 
 func main (){
-	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/",LoginPage)
 	http.HandleFunc("/loggout",LoggOut)
+	http.HandleFunc("/Dashboard",DashboardHandler)
 
 	fmt.Println("Server running at http://localhost:8080")
 
