@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-sky-100 min-h-screen flex">
+
+  <!-- Sidebar (20%) -->
+  <aside class="w-1/5 bg-white shadow-lg flex flex-col p-5 border-r border-sky-200">
+
+    <h2 class="text-2xl font-bold text-sky-500 mb-8 text-center">
+      🌐 Dashboard
+    </h2>
+
+    <nav class="flex flex-col space-y-4">
+
+      <a href="/chats" class="flex items-center gap-3 p-3 rounded-lg hover:bg-sky-100 text-gray-700 font-medium">
+        💬 Chats
+      </a>
+
+      <a href="/posts" class="flex items-center gap-3 p-3 rounded-lg hover:bg-sky-100 text-gray-700 font-medium">
+        📝 Posts
+      </a>
+
+      <a href="/admin/users" class="flex items-center gap-3 p-3 rounded-lg hover:bg-sky-100 text-gray-700 font-medium">
+        👥 Users Admin
+      </a>
+
+    </nav>
+
+    <div class="flex-grow"></div>
+
+    <a href="/logout" class="mt-6 p-3 bg-sky-400 text-white text-center rounded-lg hover:bg-sky-500">
+      🚪 Logout
+    </a>
+
+  </aside>
+
+  <!-- Main Content (80%) -->
+  <main class="w-4/5 p-8">
+
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">
+        👋 Welcome to your dashboard
+      </h1>
+      <div class="text-gray-600">👤 User</div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6">
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-sky-500 mb-2">💬 Chats</h3>
+        <p class="text-gray-600 text-sm">View and manage conversations.</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-sky-500 mb-2">📝 Posts</h3>
+        <p class="text-gray-600 text-sm">Create and manage posts.</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="text-lg font-semibold text-sky-500 mb-2">👥 Users</h3>
+        <p class="text-gray-600 text-sm">Administer users.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

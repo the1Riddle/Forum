@@ -11,11 +11,12 @@ import (
 
   var store = sessions.NewCookieStore([]byte("secret-key")) 
 
-var templates = template.Must(template.ParseFiles("htmltemplates/loggin.html"))
+var templates = template.Must(template.ParseFiles("htmltemplates/index.html"))
+var dashboardtemplates = template.Must(template.ParseFiles("htmltemplates/dashboard.html"))
 
 
   func LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "loggin.html", nil)
+	err := templates.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -23,10 +24,11 @@ var templates = template.Must(template.ParseFiles("htmltemplates/loggin.html"))
 	//http.Redirect(w, r, "/Dashboard", http.StatusSeeOther)
 }
 
+
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// only allow "/"
-	if r.URL.Path != "/Dashboard" {
+	if r.URL.Path != "/dashboard" {
 		http.NotFound(w, r)
 		return
 	}
@@ -42,11 +44,20 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// save session
 	session.Save(r, w)
-
+/*
 	fmt.Fprintf(w, "Hello from Go web server 🚀\n")
 	fmt.Fprintf(w, "Name stored in session: %s\n", name)
+	*/ 
+
+		err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
 
 }
+
+
 
 
 func LoggOut(w http.ResponseWriter, r *http.Request) {
@@ -67,12 +78,13 @@ func LoggOut(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-
+/*
+*/
 
 func main (){
 	http.HandleFunc("/",LoginPage)
-	http.HandleFunc("/loggout",LoggOut)
-	http.HandleFunc("/Dashboard",DashboardHandler)
+	http.HandleFunc("/logout",LoggOut)
+	http.HandleFunc("/dashboard",DashboardHandler)
 
 	fmt.Println("Server running at http://localhost:8080")
 
