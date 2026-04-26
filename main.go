@@ -4,6 +4,7 @@ import (
 "net/http"
 "github.com/gorilla/sessions"
 "html/template"
+"forum/middlewares"
 "fmt"
 
 )
@@ -26,6 +27,8 @@ var dashboardtemplates = template.Must(template.ParseFiles("htmltemplates/dashbo
 
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+
+	
 
 	// only allow "/"
 	if r.URL.Path != "/dashboard" {
@@ -85,6 +88,8 @@ func main (){
 	http.HandleFunc("/",LoginPage)
 	http.HandleFunc("/logout",LoggOut)
 	http.HandleFunc("/dashboard",DashboardHandler)
+
+middlewares.AuthenticationMiddleware()
 
 	fmt.Println("Server running at http://localhost:8080")
 
