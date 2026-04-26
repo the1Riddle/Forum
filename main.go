@@ -9,6 +9,10 @@ import (
 
 )
 
+type UserDetails struct{
+	Name,Email,Password string
+}
+
 
   var store = sessions.NewCookieStore([]byte("secret-key")) 
 
@@ -28,7 +32,8 @@ var dashboardtemplates = template.Must(template.ParseFiles("htmltemplates/dashbo
 
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
-	
+	var User UserDetails
+
 
 	// only allow "/"
 	if r.URL.Path != "/dashboard" {
@@ -41,6 +46,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// create variable
 	name := "Aokutu"
+	User.Name =  name 
 
 	// assign to session
 	session.Values["name"] = name
@@ -56,6 +62,8 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+		
 
 
 }
@@ -87,9 +95,8 @@ func LoggOut(w http.ResponseWriter, r *http.Request) {
 func main (){
 	http.HandleFunc("/",LoginPage)
 	http.HandleFunc("/logout",LoggOut)
-	http.HandleFunc("/dashboard",DashboardHandler)
+	http.Handle("/dashboard",middlewares.AuthMiddleware(http.HandlerFunc(DashboardHandler))) 
 
-middlewares.AuthenticationMiddleware()
 
 	fmt.Println("Server running at http://localhost:8080")
 
