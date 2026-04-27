@@ -1,102 +1,104 @@
-package  main 
+package main
 
 import (
-"net/http"
-"github.com/gorilla/sessions"
-"html/template"
-"forum/middlewares"
-"fmt"
+	"fmt"
+	"html/template"
+	"net/http"
 
+	"github.com/gorilla/sessions"
+	"forum/middlewares"
 )
 
-type UserDetails struct{
-	Name,Email,Password string
+type UserDetails struct {
+	Name     string
+	Email    string
+	Password string
 }
 
-
-  var store = sessions.NewCookieStore([]byte("secret-key")) 
+var store = sessions.NewCookieStore([]byte("secret-key"))
 
 var templates = template.Must(template.ParseFiles("htmltemplates/index.html"))
 var dashboardtemplates = template.Must(template.ParseFiles("htmltemplates/dashboard.html"))
 
+/* ---------------- LOGIN PAGE ---------------- */
 
-  func LoginPage(w http.ResponseWriter, r *http.Request) {
+func LoginPage(w http.ResponseWriter, r *http.Request) {
 	err := templates.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	//http.Redirect(w, r, "/Dashboard", http.StatusSeeOther)
 }
 
+/* ---------------- LOGIN ACTION (SET SESSION) ---------------- */
 
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-
-	var User UserDetails
-
-
-	// only allow "/"
-	if r.URL.Path != "/dashboard" {
-		http.NotFound(w, r)
+func LoginAction(w http.ResponseWriter, r *http.Request) {
+ 	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	// get session
+	name := r.FormValue("name")
+	password := r.FormValue("password")
+
 	session, _ := store.Get(r, "user-session")
 
-	// create variable
-	name := "Aokutu"
-	User.Name =  name 
-
-	// assign to session
 	session.Values["name"] = name
-
-	// save session
+	session.Values["password"] = password
+	
 	session.Save(r, w)
-/*
-	fmt.Fprintf(w, "Hello from Go web server 🚀\n")
-	fmt.Fprintf(w, "Name stored in session: %s\n", name)
-	*/ 
 
-		err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", nil)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+
+}
+
+/* ---------------- DASHBOARD ---------------- */
+
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, _ := store.Get(r, "user-session")
+
+	name, _ := session.Values["name"].(string)
+
+	user := UserDetails{
+		Name: name,
+	}
+
+	err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-		
-
-
 }
 
-
-
+/* ---------------- LOGOUT ---------------- */
 
 func LoggOut(w http.ResponseWriter, r *http.Request) {
 
-	session, _ := store.Get(r, "session-name")
+	session, _ := store.Get(r, "user-session")
 
-	// Clear session values
 	session.Values = make(map[interface{}]interface{})
-
-	// Destroy cookie
 	session.Options.MaxAge = -1
-	session.Options.Path = "/"
 
-	// Save session changes (important)
 	session.Save(r, w)
 
-	// Redirect (must be last, and no writes before it)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-/*
-*/
+/* ---------------- MAIN ---------------- */
 
-func main (){
-	http.HandleFunc("/",LoginPage)
-	http.HandleFunc("/logout",LoggOut)
-	http.Handle("/dashboard",middlewares.AuthMiddleware(http.HandlerFunc(DashboardHandler))) 
+func main() {
 
+	http.HandleFunc("/", LoginPage)
+	http.HandleFunc("/login", LoginAction)
+
+	// IMPORTANT: login endpoint that sets session
+	//http.HandleFunc("/dashboard", LoginAction)
+
+	//http.HandleFunc("/logout", LoggOut)
+
+	// middleware protects dashboard
+	http.Handle("/dashboard",
+		middlewares.AuthMiddleware(http.HandlerFunc(DashboardHandler)),
+	) 
 
 	fmt.Println("Server running at http://localhost:8080")
 
