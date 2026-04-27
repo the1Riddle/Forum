@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"forum/middlewares"
+	"forum/sqldbs"
 )
 
 type UserDetails struct {
@@ -44,7 +45,7 @@ func LoginAction(w http.ResponseWriter, r *http.Request) {
 
 	session.Values["name"] = name
 	session.Values["password"] = password
-	
+
 	session.Save(r, w)
 
 	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
@@ -86,6 +87,8 @@ func LoggOut(w http.ResponseWriter, r *http.Request) {
 /* ---------------- MAIN ---------------- */
 
 func main() {
+
+		sqldbs.InitDB()
 
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/login", LoginAction)

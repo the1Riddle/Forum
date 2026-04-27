@@ -1,8 +1,10 @@
 package middlewares
 
 import (
+	"database/sql"
 	"net/http"
 	"forum/session"
+	_ "modernc.org/sqlite"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -15,6 +17,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
+
+
+		db, err := sql.Open("sqlite", "./sqldbs/test.db")
+if err != nil {
+	panic(err)
+}
+defer db.Close()
 
 		next.ServeHTTP(w, r)
 	})
