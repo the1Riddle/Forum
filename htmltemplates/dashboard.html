@@ -11,6 +11,7 @@
 
   <!-- Sidebar -->
   <aside class="w-1/5 bg-white shadow-lg flex flex-col p-5 border-r border-sky-200">
+
     <h2 class="text-2xl font-bold text-sky-500 mb-8 text-center">
       🌐 Dashboard
     </h2>
@@ -19,10 +20,14 @@
       <a href="#" class="p-3 rounded-lg bg-sky-100 text-gray-700 font-medium">
         📝 Articles
       </a>
+    <div id="articles" class="h-256 overflow-y-auto space-y-2">
+     {{.ArtDtl.Author}}
+    </div>
     </nav>
+
   </aside>
 
-  <!-- Main -->
+  <!-- Main Content -->
   <main class="w-4/5 p-8">
 
     <!-- Header -->
@@ -30,8 +35,9 @@
       📝 Articles & Comments
     </h1>
 
-    <!-- Create Article -->
+    <!-- Create Article Form -->
     <div class="bg-white p-6 rounded-xl shadow mb-8">
+
       <h2 class="text-xl font-semibold mb-4">Create Article</h2>
 
       <form action="/newarticle" method="POST" class="space-y-3">
@@ -59,13 +65,16 @@
         </button>
 
       </form>
+
     </div>
 
-    <!-- Article List -->
+    <!-- Articles List -->
+
     <div class="space-y-6">
 
       <!-- Article Card -->
       <div class="bg-white p-6 rounded-xl shadow">
+
         <h2 class="text-2xl font-bold text-sky-600">
           Sample Article Title
         </h2>
@@ -80,29 +89,23 @@
 
         <!-- Comments -->
         <div class="border-t pt-4">
+
           <h3 class="font-semibold mb-3">💬 Comments</h3>
 
           <!-- Comment -->
           <div class="mb-2">
-            <p class="text-sm text-gray-600">
-              <strong>Alice</strong>
-            </p>
-            <p class="text-gray-700 text-sm">
-              This is a comment example.
-            </p>
+            <p class="text-sm text-gray-600"><strong>Alice</strong></p>
+            <p class="text-gray-700 text-sm">This is a comment example.</p>
           </div>
 
           <div class="mb-2">
-            <p class="text-sm text-gray-600">
-              <strong>Bob</strong>
-            </p>
-            <p class="text-gray-700 text-sm">
-              Another comment here.
-            </p>
+            <p class="text-sm text-gray-600"><strong>Bob</strong></p>
+            <p class="text-gray-700 text-sm">Another comment here.</p>
           </div>
 
           <!-- Add Comment -->
           <div class="mt-4">
+
             <input 
               type="text" 
               placeholder="Write a comment..."
@@ -112,6 +115,7 @@
             <button class="bg-sky-400 text-white px-3 py-1 rounded-lg">
               Comment
             </button>
+
           </div>
 
         </div>
