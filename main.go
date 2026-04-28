@@ -91,7 +91,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	query := `
 	INSERT INTO Articles (author, title, article,likes)
-	VALUES (?, ?, ?)
+	VALUES (?, ?, ? ,?)
 	`
 
 	_, err := db.Exec(query, "ANDREW", title, article, 5 )
@@ -106,7 +106,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Article added successfully")
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 } 
 
 
