@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/sessions"
 	"forum/middlewares"
 	"forum/sqldbs"
+	"database/sql"
 )
 
 type UserDetails struct {
@@ -70,6 +71,80 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+ func NewArticle(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	title := r.FormValue("title")
+	article := r.FormValue("article")
+
+	if title == "" || article == "" {
+		http.Error(w, "Missing fields", 400)
+		return
+	}
+
+	db := sqldbs.InitDB()
+	defer db.Close()
+
+	query := `
+	INSERT INTO Articles (author, title, article,likes)
+	VALUES (?, ?, ?)
+	`
+
+	_, err := db.Exec(query, "ANDREW", title, article, 5 )
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		fmt.Println("INSERT ERROR:", err)
+		return
+	}
+
+	// TEMP: disable until confirmed working
+	ReadArticle(db)
+
+	fmt.Println("Article added successfully")
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+} 
+
+
+func ReadArticle(db *sql.DB) {
+	query := `SELECT id,author, title, article,likes FROM Articles`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id ,likes int
+		var  author, title, article  string
+
+		err := rows.Scan(&id,&author,  &title, &article, &likes)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("ID:", id)
+		fmt.Println("Author:",author)
+		fmt.Println("Title:",title)
+		fmt.Println("Article:", article)
+		fmt.Println("Likes:", likes)
+		fmt.Println("------------------------")
+	}
+
+	// Always check for errors after iteration
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+}
+
+
+
+
 /* ---------------- LOGOUT ---------------- */
 
 func LoggOut(w http.ResponseWriter, r *http.Request) {
@@ -92,6 +167,9 @@ func main() {
 
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/login", LoginAction)
+	
+
+	http.HandleFunc("/newarticle", NewArticle)
 
 	// IMPORTANT: login endpoint that sets session
 	//http.HandleFunc("/dashboard", LoginAction)

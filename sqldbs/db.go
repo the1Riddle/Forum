@@ -9,14 +9,15 @@ import (
 
 var DB *sql.DB
 
-func InitDB() {
-	var err error
-	DB, err = sql.Open("sqlite", "./sqldbs/test.db")
+func InitDB() *sql.DB {
+	db, err := sql.Open("sqlite", "./sqldbs/test.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err = DB.Ping(); err != nil {
+	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
+
+	return db
 }

@@ -1,11 +1,13 @@
-package main
+package sqldbs
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	_ "modernc.org/sqlite"
+	"fmt"
 )
+
 
 func main() {
 	db, err := sql.Open("sqlite", "test.db")
@@ -23,8 +25,10 @@ func main() {
 	//UserTable(db)
 	//AddUser(db)
 	// DeleteUser(db,4)
-	ChatTable(db)
-	ReadUsers(db)
+	//ChatTable(db)
+	//ReadUsers(db)
+	ArticlesTable(db)
+	ListTables(db)
 
 }
 
@@ -62,6 +66,58 @@ func ChatTable(db *sql.DB) {
 	}
 
 	fmt.Println("Chats table created successfully")
+}
+
+func ArticlesTable(db *sql.DB) {
+
+	createTable := `
+	CREATE TABLE IF NOT EXISTS Articles (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		author TEXT,
+		title TEXT,
+		article TEXT,
+		likes INT,
+		dislikes INT,
+		time TEXT
+	);`
+
+	_, err := db.Exec(createTable)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Articles table created successfully")
+}
+
+
+
+func ListTables(db *sql.DB) {
+	rows, err := db.Query(`
+		SELECT name 
+		FROM sqlite_master 
+		WHERE type='table'
+	`)
+	if err != nil {
+		log.Fatal("failed to list tables:", err)
+	}
+	defer rows.Close()
+
+	fmt.Println("📦 Tables in database:")
+
+	for rows.Next() {
+		var name string
+
+		err := rows.Scan(&name)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("-", name)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 
