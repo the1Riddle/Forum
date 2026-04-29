@@ -22,9 +22,12 @@
       </a>
  <div id="articles" class="h-[800px] overflow-y-auto scroll-smooth">
   {{range .ArtDtl}}
-    <div class="odd:bg-white even:bg-sky-200 px-4 py-2 rounded text-gray-800 text-sm ">
-      {{.Author}} : {{.Title}}
-    </div>
+       <a href="/article/{{.Id}}">
+      <div class="odd:bg-white even:bg-sky-200 px-4 py-2 rounded text-gray-800 text-sm hover:bg-sky-300 transition">
+        {{.Id}} {{.Author}} : {{.Title}}
+      </div>
+    </a>  
+    
   {{end}}
 </div> 
 
