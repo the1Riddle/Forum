@@ -9,6 +9,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// how db can be accessed or used in other packages
+
 func main() {
 	db := data.InitDB()
 	defer db.Close()
