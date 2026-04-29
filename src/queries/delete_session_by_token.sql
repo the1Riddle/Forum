@@ -1,1 +1,1 @@
---deleting sessions by token
+DELETE FROM sessions WHERE id = ?;

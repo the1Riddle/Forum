@@ -4,148 +4,169 @@ import (
 	myEmbed "forum/src"
 )
 
-/**
-just tired of making changes coz
-it would mean i change the names
-of my sql files to mach the struct
-then after update the code, but:
-
-we can use a map -> type QueryRegistry map[string]string
-*/
-
 type Queries struct {
-	CreatUser             string
-	CreatPost             string
-	CreatComment          string
-	CreatSession          string
-	InitializeDB          string
-	SeedCategories        string
-	AddPostCategory       string
-	GetPosts              string
-	GetUserPosts          string
-	GetPostComments       string
-	GetUserByEmail        string
-	GetSessionByToken     string
-	DeleteSessionByToken  string
-	ReactToPost           string
-	GetPostReactions      string
-	GetLikedPosts         string
-	FilterPostsByCategory string
+	CreatUser              string
+	CreatPost              string
+	CreatComment           string
+	CreatSession           string
+	InitializeDB           string
+	SeedCategories         string
+	AddPostCategory        string
+	GetPosts               string
+	GetPostByID            string
+	GetUserPosts           string
+	GetPostComments        string
+	GetUserByEmail         string
+	GetSessionByToken      string
+	DeleteSessionByToken   string
+	ReactToPost            string
+	ReactToComment         string
+	GetPostByReactions     string
+	GetLikedPosts          string
+	FilterPostsByCategory  string
+	GetCategories          string
+	GetUserReactionPost    string
+	GetUserReactionComment string
+	DeleteReactionPost     string
+	DeleteReactionComment  string
+	GetUserByID            string
 }
 
 func LoadQueries() (*Queries, error) {
-	creatUser, err := myEmbed.QueryFiles.ReadFile("queries/creat_user.sql")
+	read := func(name string) (string, error) {
+		b, err := myEmbed.QueryFiles.ReadFile("queries/" + name)
+		if err != nil {
+			return "", err
+		}
+		return string(b), nil
+	}
+
+	creatUser, err := read("creat_user.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	creatPost, err := myEmbed.QueryFiles.ReadFile("queries/creat_post.sql")
+	creatPost, err := read("creat_post.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	creatComment, err := myEmbed.QueryFiles.ReadFile("queries/creat_comment.sql")
+	creatComment, err := read("creat_comment.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	creatSession, err := myEmbed.QueryFiles.ReadFile("queries/creat_session.sql")
+	creatSession, err := read("creat_session.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	initializeDB, err := myEmbed.QueryFiles.ReadFile("queries/initialize_db.sql")
+	initializeDB, err := read("initialize_db.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	seedCategories, err := myEmbed.QueryFiles.ReadFile("queries/seed_categories.sql")
+	seedCategories, err := read("seed_categories.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	addPostCategory, err := myEmbed.QueryFiles.ReadFile("queries/add_post_to_category.sql")
+	addPostCategory, err := read("add_post_to_category.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getPosts, err := myEmbed.QueryFiles.ReadFile("queries/get_posts.sql")
+	getPosts, err := read("get_posts.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getUserPosts, err := myEmbed.QueryFiles.ReadFile("queries/get_user_posts.sql")
+	getPostByID, err := read("get_post_by_id.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getPostComments, err := myEmbed.QueryFiles.ReadFile("queries/get_post_comments.sql")
+	getUserPosts, err := read("get_user_posts.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getUserByEmail, err := myEmbed.QueryFiles.ReadFile("queries/get_user_by_email.sql")
+	getPostComments, err := read("get_post_comments.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getSessionByToken, err := myEmbed.QueryFiles.ReadFile("queries/get_session_by_token.sql")
+	getUserByEmail, err := read("get_user_by_email.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	deleteSessionByToken, err := myEmbed.QueryFiles.ReadFile("queries/delete_session_by_token.sql")
+	getSessionByToken, err := read("get_session_by_token.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	reactToPost, err := myEmbed.QueryFiles.ReadFile("queries/react_to_post.sql")
+	deleteSessionByToken, err := read("delete_session_by_token.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getPostReactions, err := myEmbed.QueryFiles.ReadFile("queries/get_post_by_reactions.sql")
+	reactToPost, err := read("react_to_post.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	getLikedPosts, err := myEmbed.QueryFiles.ReadFile("queries/get_posts_liked_by_user.sql")
+	reactToComment, err := read("react_to_comment.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	filterPostsByCategory, err := myEmbed.QueryFiles.ReadFile("queries/filter_posts_by_category.sql")
+	getPostByReactions, err := read("get_post_by_reactions.sql")
 	if err != nil {
 		return nil, err
 	}
-
-	/**
-
-	the from the prev comments we can make this change
-	key := strings.TrimSuffix(entry.Name(), ".sql")
-		registry[key] = string(content)
-
-	such that we dont have to do repetative work of assigning
-	manualy to the struct fields, but for now, this is fine
-	*/
+	getLikedPosts, err := read("get_posts_liked_by_user.sql")
+	if err != nil {
+		return nil, err
+	}
+	filterPostsByCategory, err := read("filter_posts_by_category.sql")
+	if err != nil {
+		return nil, err
+	}
+	getCategories, err := read("get_categories.sql")
+	if err != nil {
+		return nil, err
+	}
+	getUserReactionPost, err := read("get_user_reaction_post.sql")
+	if err != nil {
+		return nil, err
+	}
+	getUserReactionComment, err := read("get_user_reaction_comment.sql")
+	if err != nil {
+		return nil, err
+	}
+	deleteReactionPost, err := read("delete_reaction_post.sql")
+	if err != nil {
+		return nil, err
+	}
+	deleteReactionComment, err := read("delete_reaction_comment.sql")
+	if err != nil {
+		return nil, err
+	}
+	getUserByID, err := read("get_user_by_id.sql")
+	if err != nil {
+		return nil, err
+	}
 
 	return &Queries{
-		CreatUser:             string(creatUser),
-		CreatPost:             string(creatPost),
-		CreatComment:          string(creatComment),
-		CreatSession:          string(creatSession),
-		InitializeDB:          string(initializeDB),
-		SeedCategories:        string(seedCategories),
-		AddPostCategory:       string(addPostCategory),
-		GetPosts:              string(getPosts),
-		GetUserPosts:          string(getUserPosts),
-		GetPostComments:       string(getPostComments),
-		GetUserByEmail:        string(getUserByEmail),
-		GetSessionByToken:     string(getSessionByToken),
-		DeleteSessionByToken:  string(deleteSessionByToken),
-		ReactToPost:           string(reactToPost),
-		GetPostReactions:      string(getPostReactions),
-		GetLikedPosts:         string(getLikedPosts),
-		FilterPostsByCategory: string(filterPostsByCategory),
+		CreatUser:              creatUser,
+		CreatPost:              creatPost,
+		CreatComment:           creatComment,
+		CreatSession:           creatSession,
+		InitializeDB:           initializeDB,
+		SeedCategories:         seedCategories,
+		AddPostCategory:        addPostCategory,
+		GetPosts:               getPosts,
+		GetPostByID:            getPostByID,
+		GetUserPosts:           getUserPosts,
+		GetPostComments:        getPostComments,
+		GetUserByEmail:         getUserByEmail,
+		GetSessionByToken:      getSessionByToken,
+		DeleteSessionByToken:   deleteSessionByToken,
+		ReactToPost:            reactToPost,
+		ReactToComment:         reactToComment,
+		GetPostByReactions:     getPostByReactions,
+		GetLikedPosts:          getLikedPosts,
+		FilterPostsByCategory:  filterPostsByCategory,
+		GetCategories:          getCategories,
+		GetUserReactionPost:    getUserReactionPost,
+		GetUserReactionComment: getUserReactionComment,
+		DeleteReactionPost:     deleteReactionPost,
+		DeleteReactionComment:  deleteReactionComment,
+		GetUserByID:            getUserByID,
 	}, nil
 }

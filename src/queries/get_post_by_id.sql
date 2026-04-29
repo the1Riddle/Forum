@@ -5,5 +5,5 @@ SELECT p.id, p.user_id, p.title, p.content, p.created_at,
 FROM posts p
 JOIN users u ON p.user_id = u.id
 LEFT JOIN reactions r ON r.post_id = p.id
-GROUP BY p.id
-ORDER BY p.created_at DESC;
+WHERE p.id = ?
+GROUP BY p.id;

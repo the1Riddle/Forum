@@ -1,0 +1,47 @@
+package data
+
+import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
+	"fmt"
+	"time"
+)
+
+type Session struct {
+	ID        string
+	UserID    int
+	ExpiresAt time.Time
+}
+
+func GenerateToken() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
+func CreateSession(db *sql.DB, query string, token string, userID int) error {
+	expiresAt := time.Now().Add(24 * time.Hour)
+	_, err := db.Exec(query, token, userID, expiresAt)
+	return err
+}
+
+func GetSessionByToken(db *sql.DB, query string, token string) (*Session, error) {
+	row := db.QueryRow(query, token)
+
+	var s Session
+	err := row.Scan(&s.ID, &s.UserID, &s.ExpiresAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s, nil
+}
+
+func DeleteSession(db *sql.DB, query string, token string) error {
+	_, err := db.Exec(query, token)
+	return err
+}

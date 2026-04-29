@@ -1,10 +1,9 @@
 package data
 
-
-
 type User struct {
-	Id 	int
-	Name	string
-	Email	string
-	Password	string
+	Id           int
+	Email        string
+	Username     string
+	PasswordHash string
+	CreatedAt    string
 }
