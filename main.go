@@ -2,25 +2,27 @@ package main
 
 import (
 	"fmt"
+	"forum/middlewares"
+	"forum/modules"
+	"forum/sqldbs"
 	"html/template"
 	"net/http"
 
-	"github.com/gorilla/sessions"
-	"forum/middlewares"
-	"forum/sqldbs"
-	_"database/sql"
-	"forum/modules"
+	_ "database/sql"
 )
 
 type UserDetails struct {
 	Name string
 }
 
-var store = sessions.NewCookieStore([]byte("secret-key"))
+// var store = sessions.NewCookieStore([]byte("secret-key"))
+var store = middlewares.InitSessionStore()
 
 // templates
-var templates = template.Must(template.ParseFiles("templates/index.html"))
-var dashboardtemplates = template.Must(template.ParseFiles("templates/dashboard.html"))
+var (
+	templates          = template.Must(template.ParseFiles("templates/index.html"))
+	dashboardtemplates = template.Must(template.ParseFiles("templates/dashboard.html"))
+)
 
 /* ---------------- LOGIN PAGE ---------------- */
 
@@ -55,12 +57,11 @@ func LoginAction(w http.ResponseWriter, r *http.Request) {
 /* ---------------- DASHBOARD ---------------- */
 
 type PageData struct {
-	ArtDtl []modules.ArticleDetails
-	ArticleID  string
+	ArtDtl    []modules.ArticleDetails
+	ArticleID string
 }
 
- func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	db := sqldbs.InitDB()
 	defer db.Close()
 
@@ -79,8 +80,7 @@ type PageData struct {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-} 
-
+}
 
 func ReadArticleHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "user-session")
@@ -98,7 +98,6 @@ func ReadArticleHandler(w http.ResponseWriter, r *http.Request) {
 /* ---------------- NEW ARTICLE ---------------- */
 
 func NewArticle(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 		return
@@ -130,7 +129,6 @@ func NewArticle(w http.ResponseWriter, r *http.Request) {
 /* ---------------- LOGOUT ---------------- */
 
 func LoggOut(w http.ResponseWriter, r *http.Request) {
-
 	session, _ := store.Get(r, "user-session")
 
 	session.Values = make(map[interface{}]interface{})
@@ -144,7 +142,6 @@ func LoggOut(w http.ResponseWriter, r *http.Request) {
 /* ---------------- MAIN ---------------- */
 
 func main() {
-
 	http.HandleFunc("/", LoginPage)
 	http.HandleFunc("/login", LoginAction)
 
@@ -154,10 +151,7 @@ func main() {
 		middlewares.AuthMiddleware(http.HandlerFunc(DashboardHandler)),
 	)
 
-
-		http.HandleFunc("/article",ReadArticleHandler)
-
-
+	http.HandleFunc("/article", ReadArticleHandler)
 
 	http.HandleFunc("/logout", LoggOut)
 
