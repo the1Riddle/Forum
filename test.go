@@ -3,27 +3,30 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"forum/src/data"
-
-	_ "github.com/mattn/go-sqlite3"
 )
-
-// how db can be accessed or used in other packages
 
 func main() {
 	db := data.InitDB()
 	defer db.Close()
 
-	myQueries, err := data.LoadQueries()
+	queries, err := data.LoadQueries()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to load queries:", err)
 	}
 
-	_, err = db.Exec(myQueries.InitializeDB)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := db.Exec(queries.InitializeDB); err != nil {
+		log.Fatal("Failed to initialize database:", err)
 	}
 
-	fmt.Println("Database initialized successfully")
+	if _, err := db.Exec(queries.SeedCategories); err != nil {
+		log.Println("Warning: could not seed categories:", err)
+	}
+
+	fmt.Println("Server running at http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatal(err)
+	}
 }
