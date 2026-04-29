@@ -56,25 +56,44 @@ func LoginAction(w http.ResponseWriter, r *http.Request) {
 
 type PageData struct {
 	ArtDtl []modules.ArticleDetails
+	ArticleID  string
 }
 
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	db := sqldbs.InitDB()
 	defer db.Close()
 
-	articles := modules.Articlestitle(db) // make sure db is available here
+	articles := modules.Articlestitle(db)
+
+	session, _ := store.Get(r, "user-session")
+
+	articleID, _ := session.Values["articleid"].(string)
 
 	data := PageData{
-		ArtDtl: articles,
+		ArtDtl:    articles,
+		ArticleID: articleID,
 	}
 
 	err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
+} 
 
+
+func ReadArticleHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "user-session")
+
+	id := r.URL.Query().Get("id")
+
+	session.Values["articleid"] = id
+	session.Save(r, w)
+
+	fmt.Println("Article ID:", id)
+
+	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+}
 
 /* ---------------- NEW ARTICLE ---------------- */
 
@@ -134,6 +153,11 @@ func main() {
 	http.Handle("/dashboard",
 		middlewares.AuthMiddleware(http.HandlerFunc(DashboardHandler)),
 	)
+
+
+		http.HandleFunc("/article",ReadArticleHandler)
+
+
 
 	http.HandleFunc("/logout", LoggOut)
 
