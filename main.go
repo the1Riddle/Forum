@@ -19,8 +19,8 @@ type UserDetails struct {
 var store = sessions.NewCookieStore([]byte("secret-key"))
 
 // templates
-var templates = template.Must(template.ParseFiles("htmltemplates/index.html"))
-var dashboardtemplates = template.Must(template.ParseFiles("htmltemplates/dashboard.html"))
+var templates = template.Must(template.ParseFiles("templates/index.html"))
+var dashboardtemplates = template.Must(template.ParseFiles("templates/dashboard.html"))
 
 /* ---------------- LOGIN PAGE ---------------- */
 
