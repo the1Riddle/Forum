@@ -54,13 +54,27 @@ func LoginAction(w http.ResponseWriter, r *http.Request) {
 
 /* ---------------- DASHBOARD ---------------- */
 
+type PageData struct {
+	ArtDtl []modules.ArticleDetails
+}
+
 func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", nil)
+	db := sqldbs.InitDB()
+	defer db.Close()
+
+	articles := modules.Articlestitle(db) // make sure db is available here
+
+	data := PageData{
+		ArtDtl: articles,
+	}
+
+	err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
 
 /* ---------------- NEW ARTICLE ---------------- */
 

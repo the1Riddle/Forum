@@ -20,9 +20,14 @@
       <a href="#" class="p-3 rounded-lg bg-sky-100 text-gray-700 font-medium">
         📝 Articles
       </a>
-    <div id="articles" class="h-256 overflow-y-auto space-y-2">
-     {{.ArtDtl.Author}}
+ <div id="articles" class="h-[800px] overflow-y-auto scroll-smooth">
+  {{range .ArtDtl}}
+    <div class="odd:bg-white even:bg-sky-200 px-4 py-2 rounded text-gray-800 text-sm ">
+      {{.Author}} : {{.Title}}
     </div>
+  {{end}}
+</div> 
+
     </nav>
 
   </aside>
