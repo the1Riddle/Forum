@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ForumFlow - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-sky-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md border-t-4 border-sky-400">
+        <h1 class="text-3xl font-bold text-center text-sky-500 mb-6">👋 Welcome Back</h1>
+        <p class="text-center text-gray-500 mb-6">Please login to continue 🚀</p>
+
+        <form class="space-y-4" method="POST" action="/login">
+            <div>
+                <label class="block text-gray-600 mb-1">👤 Username or Email</label>
+                <input name="identifier" type="text" placeholder="Enter your username or email"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400" required />
+            </div>
+            <div>
+                <label class="block text-gray-600 mb-1">🔒 Password</label>
+                <input name="password" type="password" placeholder="Enter your password"
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400" required />
+            </div>
+            <button type="submit" class="w-full bg-sky-400 hover:bg-sky-500 text-white font-semibold py-2 rounded-lg transition duration-200">
+                🚀 Login
+            </button>
+        </form>
+
+        <div class="my-4 flex items-center">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="px-3 text-gray-400 text-sm">or</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <a href="/register" class="block w-full bg-white border border-sky-400 text-sky-500 font-semibold py-2 rounded-lg hover:bg-sky-50 transition duration-200 text-center">
+            🆕 Create New Account
+        </a>
+    </div>
+</body>
+</html>
