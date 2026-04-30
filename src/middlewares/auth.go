@@ -2,9 +2,8 @@ package middlewares
 
 import (
 	"database/sql"
+	session "forum/src/sessions"
 	"net/http"
-
-	"forum/session"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,11 +18,21 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		db, err := sql.Open("sqlite", "./sqldbs/test.db")
+		// FIXED: Use "sqlite3" instead of "sqlite"
+		db, err := sql.Open("sqlite3", "./sqldbs/test.db")
 		if err != nil {
-			panic(err)
+			http.Error(w, "Database connection error", http.StatusInternalServerError)
+			return
 		}
 		defer db.Close()
+
+		// Verify user exists in database (optional but recommended)
+		var userExists bool
+		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", name).Scan(&userExists)
+		if err != nil || !userExists {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
