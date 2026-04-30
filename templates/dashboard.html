@@ -1,432 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ForumFlow - Community Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    .like-btn.active { color: #3b82f6; }
-    .dislike-btn.active { color: #ef4444; }
-    .category-chip.selected { background-color: #3b82f6; color: white; }
-    .transition-all { transition: all 0.2s ease; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ForumFlow - Community Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script>
+        // Dark mode initialization - runs before page renders
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    
+    <style>
+        /* Dark mode styles */
+        .dark {
+            background-color: #1a202c;
+        }
+        .dark .bg-white {
+            background-color: #1f2937 !important;
+        }
+        .dark .bg-gray-100, .dark .bg-gray-50, .dark .bg-sky-50 {
+            background-color: #374151 !important;
+        }
+        .dark .text-gray-700, .dark .text-gray-800, .dark .text-gray-900 {
+            color: #f3f4f6 !important;
+        }
+        .dark .text-gray-500, .dark .text-gray-600 {
+            color: #9ca3af !important;
+        }
+        .dark .border, .dark .border-gray-200, .dark .border-sky-200 {
+            border-color: #374151 !important;
+        }
+        .dark .shadow, .dark .shadow-lg, .dark .shadow-xl {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .bg-sky-100 {
+            background-color: #1e3a8a !important;
+        }
+        .dark .bg-sky-400, .dark .bg-sky-500 {
+            background-color: #2563eb !important;
+        }
+        .dark .text-sky-500, .dark .text-sky-600 {
+            color: #60a5fa !important;
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .post-card {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+    </style>
 </head>
+<body class="bg-sky-100 dark:bg-gray-900 min-h-screen flex">
 
-<body class="bg-sky-100 min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-1/5 bg-white dark:bg-gray-800 shadow-lg flex flex-col p-5 border-r border-sky-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold text-sky-500 dark:text-sky-400 mb-8 text-center">
+            <i class="fas fa-comments"></i> ForumFlow
+        </h2>
 
-  <!-- Sidebar -->
-  <aside class="w-1/5 bg-white shadow-lg flex flex-col p-5 border-r border-sky-200">
-    <h2 class="text-2xl font-bold text-sky-500 mb-8 text-center">
-      <i class="fas fa-comments"></i> ForumFlow
-    </h2>
-
-    <!-- User Info (Dynamic with Go template) -->
-    <div class="mb-6 p-3 bg-sky-50 rounded-lg">
-      {{if .User}}
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center text-white font-bold">
-            {{.User.Username | printf "%c"}}
-          </div>
-          <div>
-            <p class="font-semibold text-gray-800">{{.User.Username}}</p>
-            <p class="text-xs text-gray-500">{{.User.Email}}</p>
-          </div>
-        </div>
-        <button id="logoutBtn" class="mt-3 w-full bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
-      {{else}}
-        <button id="showLoginBtn" class="w-full bg-sky-500 text-white px-3 py-2 rounded-lg mb-2">
-          <i class="fas fa-sign-in-alt"></i> Login
-        </button>
-        <button id="showRegisterBtn" class="w-full border border-sky-500 text-sky-500 px-3 py-2 rounded-lg">
-          <i class="fas fa-user-plus"></i> Register
-        </button>
-      {{end}}
-    </div>
-
-    <!-- Filter Section -->
-    <div class="mb-6">
-      <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-filter"></i> Filters</h3>
-      
-      <!-- Categories Filter -->
-      <div class="mb-4">
-        <p class="text-sm text-gray-600 mb-2">Categories:</p>
-        <div id="categoryFilters" class="flex flex-wrap gap-2">
-          {{range .Categories}}
-            <button data-category="{{.}}" class="category-filter px-3 py-1 bg-gray-200 rounded-full text-sm hover:bg-sky-300 transition">
-              {{.}}
-            </button>
-          {{end}}
-        </div>
-      </div>
-
-      <!-- Special Filters (only for logged in users) -->
-      {{if .User}}
-        <div class="space-y-2">
-          <button id="myPostsFilter" class="w-full text-left px-3 py-2 bg-gray-100 rounded-lg hover:bg-sky-100 transition">
-            <i class="fas fa-user-edit"></i> My Posts
-          </button>
-          <button id="likedPostsFilter" class="w-full text-left px-3 py-2 bg-gray-100 rounded-lg hover:bg-sky-100 transition">
-            <i class="fas fa-heart"></i> Liked Posts
-          </button>
-        </div>
-      {{end}}
-      
-      <button id="resetFilter" class="mt-4 w-full text-center px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-sm">
-        <i class="fas fa-times"></i> Clear Filters
-      </button>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="flex flex-col space-y-2 mt-auto">
-      <a href="/dashboard" class="p-3 rounded-lg bg-sky-100 text-gray-700 font-medium">
-        <i class="fas fa-newspaper"></i> All Posts
-      </a>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="w-4/5 p-8 overflow-y-auto h-screen">
-
-    <!-- Header -->
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">
-      <i class="fas fa-comments"></i> Community Forum
-    </h1>
-
-    <!-- Create Post Form (only for logged in users) -->
-    {{if .User}}
-      <div class="bg-white p-6 rounded-xl shadow mb-8">
-        <h2 class="text-xl font-semibold mb-4"><i class="fas fa-pen-alt"></i> Create New Post</h2>
-        
-        <form id="createPostForm" class="space-y-3">
-          <input 
-            type="text" 
-            id="postTitle"
-            placeholder="Post Title"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-400"
-            required
-          />
-          
-          <textarea 
-            id="postContent"
-            placeholder="Write your post content..."
-            class="w-full p-3 border rounded-lg h-32 focus:ring-2 focus:ring-sky-400"
-            required
-          ></textarea>
-          
-          <!-- Categories Selection -->
-          <div>
-            <label class="block text-gray-700 mb-2">Select Categories (max 3):</label>
-            <div class="flex flex-wrap gap-2">
-              {{range .Categories}}
-                <button type="button" data-cat="{{.}}" class="category-chip px-3 py-1 bg-gray-200 rounded-full text-sm hover:bg-sky-300 transition">
-                  {{.}}
-                </button>
-              {{end}}
-            </div>
-          </div>
-          
-          <button type="submit" class="bg-sky-500 text-white px-6 py-2 rounded-lg hover:bg-sky-600">
-            <i class="fas fa-paper-plane"></i> Publish Post
-          </button>
-        </form>
-      </div>
-    {{else}}
-      <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-xl mb-8 text-center">
-        <i class="fas fa-lock text-yellow-600 text-2xl mb-2"></i>
-        <p class="text-gray-700">Please login to create posts and interact with the community!</p>
-      </div>
-    {{end}}
-
-    <!-- Posts Feed -->
-    <div id="postsFeed" class="space-y-6">
-      {{range .Posts}}
-        <div class="bg-white p-6 rounded-xl shadow" data-post-id="{{.ID}}">
-          <!-- Post Header -->
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <h2 class="text-2xl font-bold text-sky-600">{{.Title}}</h2>
-              <p class="text-sm text-gray-500 mt-1">
-                <i class="fas fa-user"></i> {{.Author}} • 
-                <i class="far fa-clock"></i> {{.CreatedAt}}
-              </p>
-            </div>
-            <div class="flex gap-1">
-              {{range .Categories}}
-                <span class="px-2 py-1 bg-sky-100 text-sky-700 rounded-lg text-xs">{{.}}</span>
-              {{end}}
-            </div>
-          </div>
-
-          <!-- Post Content -->
-          <p class="text-gray-700 mb-4">{{.Content}}</p>
-
-          <!-- Reactions -->
-          <div class="flex gap-4 mb-4 border-t pt-4">
-            <button class="like-btn flex items-center gap-2 px-3 py-1 rounded-lg transition {{if $.User}}{{if eq .UserReaction "like"}}active{{end}}{{end}}" data-post-id="{{.ID}}">
-              <i class="fas fa-thumbs-up"></i> 
-              <span class="like-count">{{.LikesCount}}</span>
-            </button>
-            <button class="dislike-btn flex items-center gap-2 px-3 py-1 rounded-lg transition {{if $.User}}{{if eq .UserReaction "dislike"}}active{{end}}{{end}}" data-post-id="{{.ID}}">
-              <i class="fas fa-thumbs-down"></i> 
-              <span class="dislike-count">{{.DislikesCount}}</span>
-            </button>
-            <button class="toggle-comments flex items-center gap-2 px-3 py-1 rounded-lg transition text-gray-600">
-              <i class="fas fa-comment"></i> 
-              <span>{{len .Comments}}</span> Comments
-            </button>
-          </div>
-
-          <!-- Comments Section (Hidden by default) -->
-          <div class="comments-section hidden border-t pt-4">
-            <!-- Existing Comments -->
-            <div class="comments-list space-y-3 mb-4">
-              {{range .Comments}}
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <p class="text-sm font-semibold text-gray-800">{{.Author}}</p>
-                  <p class="text-gray-700 text-sm">{{.Content}}</p>
-                  <div class="flex gap-3 mt-2">
-                    <button class="comment-like-btn text-xs text-gray-500 hover:text-sky-600" data-comment-id="{{.ID}}">
-                      <i class="fas fa-thumbs-up"></i> {{.LikesCount}}
-                    </button>
-                    <button class="comment-dislike-btn text-xs text-gray-500 hover:text-red-600" data-comment-id="{{.ID}}">
-                      <i class="fas fa-thumbs-down"></i> {{.DislikesCount}}
-                    </button>
-                  </div>
+        <!-- User Info -->
+        <div class="mb-6 p-3 bg-sky-50 dark:bg-gray-700 rounded-lg">
+            {{if .User}}
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {{.User.Username | printf "%c"}}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800 dark:text-gray-200">{{.User.Username}}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{.User.Email}}</p>
+                    </div>
                 </div>
-              {{end}}
+                <button id="logoutBtn" class="mt-3 w-full bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            {{else}}
+                <button id="showLoginBtn" class="w-full bg-sky-500 text-white px-3 py-2 rounded-lg mb-2 transition hover:bg-sky-600">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button id="showRegisterBtn" class="w-full border border-sky-500 text-sky-500 dark:text-sky-400 px-3 py-2 rounded-lg transition hover:bg-sky-50 dark:hover:bg-gray-700">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            {{end}}
+        </div>
+
+        <!-- Filter Section -->
+        <div class="mb-6">
+            <h3 class="font-semibold text-gray-700 dark:text-gray-300 mb-3"><i class="fas fa-filter"></i> Filters</h3>
+            
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Categories:</p>
+                <div id="categoryFilters" class="flex flex-wrap gap-2">
+                    {{range .Categories}}
+                        <button data-category="{{.}}" class="category-filter px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-sky-300 dark:hover:bg-sky-700 transition">
+                            {{.}}
+                        </button>
+                    {{end}}
+                </div>
             </div>
 
-            <!-- Add Comment Form (only for logged in users) -->
-            {{if $.User}}
-              <div class="flex gap-2">
-                <input type="text" placeholder="Write a comment..." class="comment-input flex-1 p-2 border rounded-lg" data-post-id="{{.ID}}">
-                <button class="submit-comment bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">
-                  Post
-                </button>
-              </div>
-            {{else}}
-              <p class="text-sm text-gray-500 text-center">Login to comment</p>
+            {{if .User}}
+                <div class="space-y-2">
+                    <button id="myPostsFilter" class="w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900 transition text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-user-edit"></i> My Posts
+                    </button>
+                    <button id="likedPostsFilter" class="w-full text-left px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900 transition text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-heart"></i> Liked Posts
+                    </button>
+                </div>
             {{end}}
-          </div>
+            
+            <button id="resetFilter" class="mt-4 w-full text-center px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm text-gray-700 dark:text-gray-300">
+                <i class="fas fa-times"></i> Clear Filters
+            </button>
         </div>
-      {{else}}
-        <div class="bg-white p-12 rounded-xl shadow text-center">
-          <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
-          <p class="text-gray-500">No posts yet. Be the first to create one!</p>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="w-4/5 p-8 overflow-y-auto h-screen">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+            <i class="fas fa-comments"></i> Community Forum
+        </h1>
+
+        <!-- Create Post Form -->
+        {{if .User}}
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow mb-8">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200"><i class="fas fa-pen-alt"></i> Create New Post</h2>
+                
+                <form id="createPostForm" class="space-y-3">
+                    <input type="text" id="postTitle" placeholder="Post Title" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required />
+                    <textarea id="postContent" placeholder="Write your post content..." rows="4" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-sky-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" required></textarea>
+                    
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 mb-2">Select Categories:</label>
+                        <div class="flex flex-wrap gap-2" id="categoriesSelector">
+                            {{range .Categories}}
+                                <button type="button" data-cat="{{.}}" class="category-chip px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-sky-300 dark:hover:bg-sky-700 transition">
+                                    {{.}}
+                                </button>
+                            {{end}}
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="bg-sky-500 text-white px-6 py-2 rounded-lg hover:bg-sky-600 transition">
+                        <i class="fas fa-paper-plane"></i> Publish Post
+                    </button>
+                </form>
+            </div>
+        {{else}}
+            <div class="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 p-6 rounded-xl mb-8 text-center">
+                <i class="fas fa-lock text-yellow-600 dark:text-yellow-400 text-2xl mb-2"></i>
+                <p class="text-gray-700 dark:text-gray-300">Please login to create posts and interact with the community!</p>
+            </div>
+        {{end}}
+
+        <!-- Posts Feed -->
+        <div id="postsFeed" class="space-y-6">
+            {{range .Posts}}
+                <div class="post-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow" data-post-id="{{.ID}}">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h2 class="text-2xl font-bold text-sky-600 dark:text-sky-400">{{.Title}}</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <i class="fas fa-user"></i> {{.Author}} • 
+                                <i class="far fa-clock"></i> {{.CreatedAt}}
+                            </p>
+                        </div>
+                        <div class="flex gap-1 flex-wrap">
+                            {{range .Categories}}
+                                <span class="px-2 py-1 bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 rounded-lg text-xs">{{.}}</span>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">{{.Content}}</p>
+
+                    <div class="flex gap-4 mb-4 border-t dark:border-gray-700 pt-4">
+                        <button class="like-btn flex items-center gap-2 px-3 py-1 rounded-lg transition hover:bg-sky-100 dark:hover:bg-sky-900" data-post-id="{{.ID}}">
+                            <i class="fas fa-thumbs-up"></i> 
+                            <span class="like-count">{{.LikesCount}}</span>
+                        </button>
+                        <button class="dislike-btn flex items-center gap-2 px-3 py-1 rounded-lg transition hover:bg-red-100 dark:hover:bg-red-900" data-post-id="{{.ID}}">
+                            <i class="fas fa-thumbs-down"></i> 
+                            <span class="dislike-count">{{.DislikesCount}}</span>
+                        </button>
+                        <button class="toggle-comments flex items-center gap-2 px-3 py-1 rounded-lg transition text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <i class="fas fa-comment"></i> 
+                            <span>{{len .Comments}}</span> Comments
+                        </button>
+                    </div>
+
+                    <div class="comments-section hidden border-t dark:border-gray-700 pt-4">
+                        <div class="comments-list space-y-3 mb-4">
+                            {{range .Comments}}
+                                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{.Author}}</p>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm">{{.Content}}</p>
+                                </div>
+                            {{end}}
+                        </div>
+
+                        {{if $.User}}
+                            <div class="flex gap-2">
+                                <input type="text" placeholder="Write a comment..." class="comment-input flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" data-post-id="{{.ID}}">
+                                <button class="submit-comment bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition">
+                                    Post
+                                </button>
+                            </div>
+                        {{else}}
+                            <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Login to comment</p>
+                        {{end}}
+                    </div>
+                </div>
+            {{else}}
+                <div class="bg-white dark:bg-gray-800 p-12 rounded-xl shadow text-center">
+                    <i class="fas fa-inbox text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No posts yet. Be the first to create one!</p>
+                </div>
+            {{end}}
         </div>
-      {{end}}
+    </main>
+
+    <!-- Dark Mode Toggle Button -->
+    <script>
+        (function() {
+            const toggleBtn = document.createElement('button');
+            const isDark = localStorage.getItem('theme') === 'dark';
+            toggleBtn.innerHTML = isDark ? '☀️' : '🌙';
+            toggleBtn.className = 'fixed bottom-4 right-4 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg z-50 cursor-pointer hover:scale-110 transition-all duration-200 text-xl';
+            toggleBtn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+            toggleBtn.onclick = () => {
+                const nowDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+                toggleBtn.innerHTML = nowDark ? '☀️' : '🌙';
+            };
+            document.body.appendChild(toggleBtn);
+        })();
+    </script>
+
+    <!-- Authentication Modals -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold text-sky-500 dark:text-sky-400 mb-4">Login</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
+                <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
+                <button type="submit" class="w-full bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Login</button>
+                <button type="button" id="closeLoginModal" class="w-full border dark:border-gray-600 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancel</button>
+            </form>
+        </div>
     </div>
-  </main>
 
-  <!-- Authentication Modals -->
-  <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-8 w-full max-w-md">
-      <h2 class="text-2xl font-bold text-sky-500 mb-4">Login</h2>
-      <form id="loginForm" class="space-y-4">
-        <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 border rounded-lg" required>
-        <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 border rounded-lg" required>
-        <button type="submit" class="w-full bg-sky-500 text-white py-2 rounded-lg">Login</button>
-        <button type="button" id="closeLoginModal" class="w-full border py-2 rounded-lg">Cancel</button>
-      </form>
+    <div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold text-sky-500 dark:text-sky-400 mb-4">Register</h2>
+            <form id="registerForm" class="space-y-4">
+                <input type="text" id="regUsername" placeholder="Username" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
+                <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
+                <input type="password" id="regPassword" placeholder="Password" class="w-full p-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600" required>
+                <button type="submit" class="w-full bg-sky-500 text-white py-2 rounded-lg hover:bg-sky-600 transition">Register</button>
+                <button type="button" id="closeRegisterModal" class="w-full border dark:border-gray-600 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancel</button>
+            </form>
+        </div>
     </div>
-  </div>
 
-  <div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-8 w-full max-w-md">
-      <h2 class="text-2xl font-bold text-sky-500 mb-4">Register</h2>
-      <form id="registerForm" class="space-y-4">
-        <input type="text" id="regUsername" placeholder="Username" class="w-full p-3 border rounded-lg" required>
-        <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 border rounded-lg" required>
-        <input type="password" id="regPassword" placeholder="Password" class="w-full p-3 border rounded-lg" required>
-        <button type="submit" class="w-full bg-sky-500 text-white py-2 rounded-lg">Register</button>
-        <button type="button" id="closeRegisterModal" class="w-full border py-2 rounded-lg">Cancel</button>
-      </form>
-    </div>
-  </div>
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed bottom-20 right-4 z-50 space-y-2"></div>
 
-  <script>
-    // JavaScript for AJAX interactions
-    let currentFilter = { category: null, type: 'all' };
+    <!-- Main JavaScript -->
+    <script>
+        // Notification System
+        const showNotification = (message, type = 'info') => {
+            const container = document.getElementById('notificationContainer');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span>${icons[type]}</span>
+                    <span>${message}</span>
+                    <button class="ml-4 hover:opacity-75">&times;</button>
+                </div>
+            `;
+            container.appendChild(notification);
+            
+            setTimeout(() => notification.classList.remove('translate-x-full'), 10);
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+            
+            notification.querySelector('button').onclick = () => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            };
+        };
 
-    // Toggle comments visibility
-    document.querySelectorAll('.toggle-comments').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const commentsSection = btn.closest('.bg-white').querySelector('.comments-section');
-        commentsSection.classList.toggle('hidden');
-      });
-    });
-
-    // Like/Dislike functionality
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const postId = btn.dataset.postId;
-        const response = await fetch(`/api/like?postId=${postId}`, { method: 'POST' });
-        const data = await response.json();
-        if (data.success) {
-          const postCard = btn.closest('.bg-white');
-          postCard.querySelector('.like-count').textContent = data.likesCount;
-          postCard.querySelector('.dislike-count').textContent = data.dislikesCount;
-          btn.classList.toggle('active');
-          const dislikeBtn = postCard.querySelector('.dislike-btn');
-          if (data.reaction === 'like') dislikeBtn.classList.remove('active');
-        }
-      });
-    });
-
-    document.querySelectorAll('.dislike-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const postId = btn.dataset.postId;
-        const response = await fetch(`/api/dislike?postId=${postId}`, { method: 'POST' });
-        const data = await response.json();
-        if (data.success) {
-          const postCard = btn.closest('.bg-white');
-          postCard.querySelector('.like-count').textContent = data.likesCount;
-          postCard.querySelector('.dislike-count').textContent = data.dislikesCount;
-          btn.classList.toggle('active');
-          const likeBtn = postCard.querySelector('.like-btn');
-          if (data.reaction === 'dislike') likeBtn.classList.remove('active');
-        }
-      });
-    });
-
-    // Create post
-    document.getElementById('createPostForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('postTitle').value;
-      const content = document.getElementById('postContent').value;
-      const categories = Array.from(document.querySelectorAll('.category-chip.selected')).map(c => c.dataset.cat);
-      
-      const response = await fetch('/api/createpost', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content, categories })
-      });
-      
-      if (response.ok) {
-        window.location.reload();
-      }
-    });
-
-    // Category chip selection
-    document.querySelectorAll('.category-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chip.classList.toggle('selected');
-      });
-    });
-
-    // Filtering
-    document.querySelectorAll('.category-filter').forEach(filter => {
-      filter.addEventListener('click', async () => {
-        const category = filter.dataset.category;
-        const response = await fetch(`/api/filter?category=${category}`);
-        const posts = await response.json();
-        updatePostsFeed(posts);
-      });
-    });
-
-    document.getElementById('myPostsFilter')?.addEventListener('click', async () => {
-      const response = await fetch('/api/myposts');
-      const posts = await response.json();
-      updatePostsFeed(posts);
-    });
-
-    document.getElementById('likedPostsFilter')?.addEventListener('click', async () => {
-      const response = await fetch('/api/likedposts');
-      const posts = await response.json();
-      updatePostsFeed(posts);
-    });
-
-    document.getElementById('resetFilter')?.addEventListener('click', async () => {
-      const response = await fetch('/api/allposts');
-      const posts = await response.json();
-      updatePostsFeed(posts);
-    });
-
-    function updatePostsFeed(posts) {
-      // Re-render posts feed with new data
-      const feed = document.getElementById('postsFeed');
-      // Implementation would rebuild the HTML
-      window.location.reload(); // Simple reload for demo
-    }
-
-    // Comment submission
-    document.querySelectorAll('.submit-comment').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const postId = btn.querySelector('.comment-input')?.dataset.postId || 
-                      btn.previousElementSibling?.dataset.postId;
-        const input = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
-        const content = input.value;
-        
-        const response = await fetch('/api/comment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId, content })
+        // Toggle comments visibility
+        document.querySelectorAll('.toggle-comments').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const commentsSection = btn.closest('.bg-white, .dark\\:bg-gray-800').querySelector('.comments-section');
+                commentsSection.classList.toggle('hidden');
+            });
         });
-        
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-    });
 
-    // Modal handling
-    document.getElementById('showLoginBtn')?.addEventListener('click', () => {
-      document.getElementById('loginModal').classList.remove('hidden');
-    });
+        // Like functionality
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const postId = btn.dataset.postId;
+                try {
+                    const response = await fetch(`/api/like?postId=${postId}`, { method: 'POST' });
+                    const data = await response.json();
+                    if (data.success) {
+                        const postCard = btn.closest('.bg-white, .dark\\:bg-gray-800');
+                        postCard.querySelector('.like-count').textContent = data.likesCount;
+                        postCard.querySelector('.dislike-count').textContent = data.dislikesCount;
+                        showNotification('Post liked!', 'success');
+                    }
+                } catch (error) {
+                    showNotification('Please login to like posts', 'warning');
+                }
+            });
+        });
 
-    document.getElementById('showRegisterBtn')?.addEventListener('click', () => {
-      document.getElementById('registerModal').classList.remove('hidden');
-    });
+        // Dislike functionality
+        document.querySelectorAll('.dislike-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const postId = btn.dataset.postId;
+                try {
+                    const response = await fetch(`/api/dislike?postId=${postId}`, { method: 'POST' });
+                    const data = await response.json();
+                    if (data.success) {
+                        const postCard = btn.closest('.bg-white, .dark\\:bg-gray-800');
+                        postCard.querySelector('.like-count').textContent = data.likesCount;
+                        postCard.querySelector('.dislike-count').textContent = data.dislikesCount;
+                        showNotification('Post disliked', 'info');
+                    }
+                } catch (error) {
+                    showNotification('Please login to dislike posts', 'warning');
+                }
+            });
+        });
 
-    document.getElementById('closeLoginModal')?.addEventListener('click', () => {
-      document.getElementById('loginModal').classList.add('hidden');
-    });
+        // Category chip selection for new post
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('selected');
+                if (chip.classList.contains('selected')) {
+                    chip.classList.add('bg-sky-500', 'text-white');
+                    chip.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                } else {
+                    chip.classList.remove('bg-sky-500', 'text-white');
+                    chip.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                }
+            });
+        });
 
-    document.getElementById('closeRegisterModal')?.addEventListener('click', () => {
-      document.getElementById('registerModal').classList.add('hidden');
-    });
+        // Create post
+        document.getElementById('createPostForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            const categories = Array.from(document.querySelectorAll('.category-chip.selected')).map(c => c.dataset.cat);
+            
+            if (categories.length === 0) {
+                showNotification('Please select at least one category', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/createpost', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content, categories })
+                });
+                
+                if (response.ok) {
+                    showNotification('Post created successfully!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            } catch (error) {
+                showNotification('Error creating post', 'error');
+            }
+        });
 
-    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      if (response.ok) {
-        window.location.href = '/dashboard';
-      }
-    });
+        // Filter by category
+        document.querySelectorAll('.category-filter').forEach(filter => {
+            filter.addEventListener('click', async () => {
+                const category = filter.dataset.category;
+                const response = await fetch(`/api/filter?category=${category}`);
+                window.location.reload();
+            });
+        });
 
-    document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('regUsername').value;
-      const email = document.getElementById('regEmail').value;
-      const password = document.getElementById('regPassword').value;
-      
-      const response = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
-      });
-      
-      if (response.ok) {
-        window.location.href = '/dashboard';
-      }
-    });
+        // My posts filter
+        document.getElementById('myPostsFilter')?.addEventListener('click', async () => {
+            window.location.href = '/myposts';
+        });
 
-    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-      await fetch('/logout', { method: 'POST' });
-      window.location.href = '/';
-    });
-  </script>
+        // Liked posts filter
+        document.getElementById('likedPostsFilter')?.addEventListener('click', async () => {
+            window.location.href = '/likedposts';
+        });
+
+        // Reset filter
+        document.getElementById('resetFilter')?.addEventListener('click', async () => {
+            window.location.href = '/dashboard';
+        });
+
+        // Comment submission
+        document.querySelectorAll('.submit-comment').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const input = btn.previousElementSibling;
+                const postId = input.dataset.postId;
+                const content = input.value;
+                
+                if (!content.trim()) {
+                    showNotification('Please enter a comment', 'warning');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/comment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ postId, content })
+                    });
+                    
+                    if (response.ok) {
+                        showNotification('Comment added!', 'success');
+                        setTimeout(() => window.location.reload(), 500);
+                    }
+                } catch (error) {
+                    showNotification('Error adding comment', 'error');
+                }
+            });
+        });
+
+        // Modal handling
+        document.getElementById('showLoginBtn')?.addEventListener('click', () => {
+            document.getElementById('loginModal').classList.remove('hidden');
+        });
+
+        document.getElementById('showRegisterBtn')?.addEventListener('click', () => {
+            document.getElementById('registerModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeLoginModal')?.addEventListener('click', () => {
+            document.getElementById('loginModal').classList.add('hidden');
+        });
+
+        document.getElementById('closeRegisterModal')?.addEventListener('click', () => {
+            document.getElementById('registerModal').classList.add('hidden');
+        });
+
+        // Login form
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (response.ok) {
+                showNotification('Login successful!', 'success');
+                setTimeout(() => window.location.href = '/dashboard', 500);
+            } else {
+                showNotification('Invalid credentials', 'error');
+            }
+        });
+
+        // Register form
+        document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+            
+            if (response.ok) {
+                showNotification('Registration successful! Please login', 'success');
+                document.getElementById('registerModal').classList.add('hidden');
+            } else {
+                showNotification('Registration failed', 'error');
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+            await fetch('/logout', { method: 'POST' });
+            window.location.href = '/';
+        });
+    </script>
 </body>
 </html>
