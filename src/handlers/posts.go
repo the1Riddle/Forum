@@ -1,25 +1,15 @@
-package main
+package handlers
 
 import (
-	"net/http"
+	//"net/http"
+
+	"forum/src/data"
 )
 
-func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func LikeHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func DislikeHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func CommentHandler(w http.ResponseWriter, r *http.Request) {
-
+type homePageData struct {
+	Posts      []data.PostDetails
+	Categories []data.Category
+	User       *data.User
+	Filter     string
+	Category   string
 }

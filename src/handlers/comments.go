@@ -1,17 +1,19 @@
-package main
+package handlers
 
 import (
 	"net/http"
 )
 
-func FilterByCategoryHandler(w http.ResponseWriter, r *http.Request) {
+// AddComment handles adding a comment to a post.
+func (h *Handler) AddComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
-}
-
-func MyPostsHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func LikedPostsHandler(w http.ResponseWriter, r *http.Request) {
-
+	user := h.currentUser(r)
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 }
