@@ -1,39 +1,41 @@
 package middlewares
 
 import (
-	"database/sql"
-	session "forum/src/sessions"
-	"net/http"
+        "database/sql"
+        "net/http"
+        "time"
 
-	_ "github.com/mattn/go-sqlite3"
+        "forum/src/data"
 )
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sess, _ := session.Store.Get(r, "user-session")
+func GetCurrentUser(r *http.Request, db *sql.DB, queries *data.Queries) *data.User {
+        cookie, err := r.Cookie("session_token")
+        if err != nil {
+                return nil
+        }
+        sess, err := data.GetSessionByToken(db, queries.GetSessionByToken, cookie.Value)
+        if err != nil {
+                return nil
+        }
+        if sess.ExpiresAt.Before(time.Now()) {
+                return nil
+        }
+        row := db.QueryRow(queries.GetUserByID, sess.UserID)
+        var u data.User
+        if err := row.Scan(&u.Id, &u.Email, &u.Username, &u.PasswordHash); err != nil {
+                return nil
+        }
+        return &u
+}
 
-		name, ok := sess.Values["name"].(string)
-		if !ok || name == "" {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
 
-		// FIXED: Use "sqlite3" instead of "sqlite"
-		db, err := sql.Open("sqlite3", "./sqldbs/test.db")
-		if err != nil {
-			http.Error(w, "Database connection error", http.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// Verify user exists in database (optional but recommended)
-		var userExists bool
-		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", name).Scan(&userExists)
-		if err != nil || !userExists {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+func RequireAuth(db *sql.DB, queries *data.Queries, next http.HandlerFunc) http.HandlerFunc {
+        return func(w http.ResponseWriter, r *http.Request) {
+                user := GetCurrentUser(r, db, queries)
+                if user == nil {
+                        http.Redirect(w, r, "/login", http.StatusSeeOther)
+                        return
+                }
+                next(w, r)
+        }
 }
