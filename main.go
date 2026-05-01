@@ -5,11 +5,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
-	"time"
 
 	"forum/src/data"
 	"forum/src/handlers"
+	"forum/src/uitime"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,25 +30,11 @@ func main() {
 		log.Println("Warning: could not seed categories:", err)
 	}
 
-	// or from 123, above this lol //  just to update 
+	// or from 123, above this lol //  just to update
 	// that now i have checked the above code.
 
 	funcMap := template.FuncMap{
-		"formatDate": func(s string) string {
-			formats := []string{
-				"2026-01-05T15:04:05Z",
-				time.RFC3339,
-				"2026-01-05 15:04:05",
-				"2026-01-05T15:04:05",
-			}
-			s = strings.TrimSpace(s)
-			for _, f := range formats {
-				if t, err := time.Parse(f, s); err == nil {
-					return t.Format("May 5, 2026 at 3:04 PM")
-				}
-			}
-			return s
-		},
+		"formatDate": uitime.FormatDate,
 		// go time formatation sucks.
 	}
 
@@ -108,19 +93,6 @@ func main() {
 	})
 
 	http.HandleFunc("/logout", handle.Logout)
-
-	// i have not seen anything after this line,:P
-
-	// API Routes
-	http.HandleFunc("/api/createpost", CreatePostHandler)
-	http.HandleFunc("/api/like", LikeHandler)
-	http.HandleFunc("/api/dislike", DislikeHandler)
-	http.HandleFunc("/api/comment", CommentHandler)
-
-	// Filter Routes
-	http.HandleFunc("/filter", FilterByCategoryHandler)
-	http.HandleFunc("/myposts", MyPostsHandler)
-	http.HandleFunc("/likedposts", LikedPostsHandler)
 
 	fmt.Println("Server running at http://localhost:8000")
 	if err := http.ListenAndServe(":8000", nil); err != nil {
