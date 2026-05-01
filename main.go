@@ -5,45 +5,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
+	"strings"
+	"time"
 
 	"forum/src/data"
+	"forum/src/handlers"
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-var (
-	templates          = template.Must(template.ParseFiles("templates/index.html"))
-	dashboardtemplates = template.Must(template.ParseFiles("templates/dashboard.html"))
-)
-
-/* ---------------- PAGE HANDLERS ---------------- */
-
-func LoginPage(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func DashboardPage(w http.ResponseWriter, r *http.Request) {
-	data := struct {
-		User       interface{}
-		Posts      []interface{}
-		Categories []string
-	}{
-		User:       nil,
-		Posts:      []interface{}{},
-		Categories: []string{"Technology", "Gaming", "Life & Wellness", "Coding", "Random"},
-	}
-
-	err := dashboardtemplates.ExecuteTemplate(w, "dashboard.html", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-/* ---------------- MAIN ---------------- */
 
 func main() {
 	db := data.InitDB()
@@ -62,23 +31,87 @@ func main() {
 		log.Println("Warning: could not seed categories:", err)
 	}
 
-	// Create static directories
-	os.MkdirAll("static/uploads", 0755)
+	// or from 123, above this lol //  just to update 
+	// that now i have checked the above code.
 
-	// Serve static files
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	funcMap := template.FuncMap{
+		"formatDate": func(s string) string {
+			formats := []string{
+				"2026-01-05T15:04:05Z",
+				time.RFC3339,
+				"2026-01-05 15:04:05",
+				"2026-01-05T15:04:05",
+			}
+			s = strings.TrimSpace(s)
+			for _, f := range formats {
+				if t, err := time.Parse(f, s); err == nil {
+					return t.Format("May 5, 2026 at 3:04 PM")
+				}
+			}
+			return s
+		},
+		// go time formatation sucks.
+	}
 
-	// Page Routes
-	http.HandleFunc("/", LoginPage)
-	http.HandleFunc("/dashboard", DashboardPage)
+	/**
+	so here we can just pass all templates that will intern be used in the handlers,
+	and the queries and db connection as well.
 
-	// Auth Routes
-	http.HandleFunc("/login", LoginHandler)
-	http.HandleFunc("/register", RegisterHandler)
-	http.HandleFunc("/logout", LogoutHandler)
+	ive learned that we can also change all our html templates to .tmpl
+	then just pass them to server with pashtml func from template1.
+
+	but i plan not to do that.
+	**/
+	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("templates/*.html")
+	if err != nil {
+		log.Fatal("Failed to parse templates:", err)
+	}
+
+	handle := handlers.NewHandler(db, queries, tmpl)
+
+	http.HandleFunc("/", handle.Home)
+	/** im making this home and not login since
+	in the instractions we were told users can view posts
+	even when they have not logged in,
+	so this will be the home page where they can see all posts
+	 and categories and stuff,
+	 and then they can click login to login or register to register.
+
+
+	 dont change it unless you plan to make it work in another way,
+	 but this is pafectly fine for now.
+	**/
+
+	// removed those static since
+	// im not ready to handle them but if yall are its fine by me.
+
+	/** i dont think i can fine tune it
+	var responceRequest = func(w http.ResponseWriter, r *http.Request) {
+		if r.Me
+	}
+	**/
+
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handle.Register(w, r)
+		} else {
+			handle.ShowRegister(w, r)
+		}
+	})
+
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handle.Login(w, r)
+		} else {
+			handle.ShowLogin(w, r)
+		}
+	})
+
+	http.HandleFunc("/logout", handle.Logout)
+
+	// i have not seen anything after this line,:P
 
 	// API Routes
-	http.HandleFunc("/api/upload", UploadImageHandler)
 	http.HandleFunc("/api/createpost", CreatePostHandler)
 	http.HandleFunc("/api/like", LikeHandler)
 	http.HandleFunc("/api/dislike", DislikeHandler)

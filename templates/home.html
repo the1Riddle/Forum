@@ -1,0 +1,78 @@
+{{define "home.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forum</title>
+  <script src="./static/tailwind.js"></script>
+  <link rel="stylesheet" href="./static/font-awesome.css">
+</head>
+<body class="bg-sky-50 min-h-screen">
+
+  <nav class="bg-white shadow px-6 py-3 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-sky-600">🌐 Forum</h1>
+    <div class="flex gap-3 items-center">
+      {{if .User}}
+        <span class="text-gray-600">👤 {{.User.Username}}</span>
+        <a href="/post/new" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">+ New Post</a>
+        <a href="/logout" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200">Logout</a>
+      {{else}}
+        <a href="/login" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">Login</a>
+        <a href="/register" class="bg-white border border-sky-500 text-sky-500 px-4 py-2 rounded-lg hover:bg-sky-50">Register</a>
+      {{end}}
+    </div>
+  </nav>
+
+  <div class="max-w-5xl mx-auto p-6 flex gap-6">
+
+    <aside class="w-1/4">
+      <div class="bg-white rounded-xl shadow p-4 mb-4">
+        <h2 class="font-semibold text-gray-700 mb-3">🔍 Filter Posts</h2>
+        <a href="/" class="block py-1 px-3 rounded mb-1 text-gray-600 hover:bg-sky-50">All Posts</a>
+        {{if .User}}
+        <a href="/?filter=my" class="block py-1 px-3 rounded mb-1 text-gray-600 hover:bg-sky-50">My Posts</a>
+        <a href="/?filter=liked" class="block py-1 px-3 rounded mb-1 text-gray-600 hover:bg-sky-50">Liked Posts</a>
+        {{end}}
+      </div>
+      <div class="bg-white rounded-xl shadow p-4">
+        <h2 class="font-semibold text-gray-700 mb-3">📂 Categories</h2>
+        {{range .Categories}}
+        <a href="/?category={{.Name}}" class="block py-1 px-3 rounded text-gray-600 hover:bg-sky-50 mb-1">{{.Name}}</a>
+        {{end}}
+      </div>
+    </aside>
+
+    <main class="w-3/4">
+      {{if .Category}}
+        <h2 class="text-xl font-bold text-gray-700 mb-4">Posts in: {{.Category}}</h2>
+      {{else if eq .Filter "my"}}
+        <h2 class="text-xl font-bold text-gray-700 mb-4">My Posts</h2>
+      {{else if eq .Filter "liked"}}
+        <h2 class="text-xl font-bold text-gray-700 mb-4">Liked Posts</h2>
+      {{end}}
+
+      {{if not .Posts}}
+        <div class="bg-white rounded-xl shadow p-6 text-center text-gray-500">
+          No posts found. {{if .User}}<a href="/post/new" class="text-sky-500 hover:underline">Create the first one!</a>{{end}}
+        </div>
+      {{end}}
+
+      {{range .Posts}}
+      <div class="bg-white rounded-xl shadow p-5 mb-4">
+        <a href="/post?id={{.Id}}" class="text-xl font-bold text-sky-700 hover:underline">{{.Title}}</a>
+        <p class="text-sm text-gray-500 mt-1">By <strong>{{.Username}}</strong> &bull; {{formatDate .CreatedAt}}</p>
+        <p class="text-gray-700 mt-2">{{.Content}}</p>
+        <div class="flex gap-4 mt-3 text-sm text-gray-500">
+          <span>👍 {{.Likes}}</span>
+          <span>👎 {{.Dislikes}}</span>
+          <a href="/post?id={{.Id}}" class="text-sky-500 hover:underline ml-auto">Read more →</a>
+        </div>
+      </div>
+      {{end}}
+    </main>
+  </div>
+
+</body>
+</html>
+{{end}}
