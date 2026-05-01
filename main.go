@@ -89,8 +89,8 @@ func main() {
 	http.HandleFunc("/myposts", MyPostsHandler)
 	http.HandleFunc("/likedposts", LikedPostsHandler)
 
-	fmt.Println("Server running at http://localhost:8081")
-	if err := http.ListenAndServe(":8081", nil); err != nil {
+	fmt.Println("Server running at http://localhost:8000")
+	if err := http.ListenAndServe(":8000", nil); err != nil {
 		log.Fatal(err)
 	}
 }
