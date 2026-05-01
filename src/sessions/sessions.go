@@ -1,96 +1,46 @@
-package session
+package data
 
 import (
-	"net/http"
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
 	"time"
-
-	"github.com/gorilla/sessions"
 )
 
-var Store *sessions.CookieStore
-
-func InitSessionStore() {
-	// Use a strong secret key in production (environment variable recommended)
-	secretKey := []byte("your-32-byte-secret-key-here-change-in-production")
-	Store = sessions.NewCookieStore(secretKey)
-
-	// Configure session options
-	Store.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400, // 24 hours
-		HttpOnly: true,
-		Secure:   false, // Set to true if using HTTPS
-		SameSite: http.SameSiteLaxMode,
-	}
+type Session struct {
+	ID        string
+	UserID    int
+	ExpiresAt time.Time
 }
 
-// GetSession returns the session for the request
-func GetSession(r *http.Request) (*sessions.Session, error) {
-	return Store.Get(r, "forum-session")
-}
-
-// CreateUserSession creates a new session for a user
-func CreateUserSession(w http.ResponseWriter, r *http.Request, userID int, username string) error {
-	session, err := Store.Get(r, "forum-session")
+func GenerateToken() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	session.Values["user_id"] = userID
-	session.Values["username"] = username
-	session.Values["authenticated"] = true
-	session.Values["expires"] = time.Now().Add(24 * time.Hour)
-
-	return session.Save(r, w)
+	return hex.EncodeToString(b), nil
 }
 
-// DestroySession destroys the user's session
-func DestroySession(w http.ResponseWriter, r *http.Request) error {
-	session, err := Store.Get(r, "forum-session")
-	if err != nil {
-		return err
-	}
-
-	// Clear session values
-	session.Values = make(map[interface{}]interface{})
-	session.Options.MaxAge = -1 // Delete cookie
-
-	return session.Save(r, w)
+func CreateSession(db *sql.DB, query string, token string, userID int) error {
+	expiresAt := time.Now().Add(24 * time.Hour)
+	_, err := db.Exec(query, token, userID, expiresAt)
+	return err
 }
 
-// IsAuthenticated checks if user is logged in
-func IsAuthenticated(r *http.Request) bool {
-	session, err := Store.Get(r, "forum-session")
+func GetSessionByToken(db *sql.DB, query string, token string) (*Session, error) {
+	row := db.QueryRow(query, token)
+
+	var s Session
+	err := row.Scan(&s.ID, &s.UserID, &s.ExpiresAt)
 	if err != nil {
-		return false
+		return nil, err
 	}
 
-	auth, ok := session.Values["authenticated"].(bool)
-	if !ok || !auth {
-		return false
-	}
-
-	// Check expiry
-	expires, ok := session.Values["expires"].(time.Time)
-	if ok && time.Now().After(expires) {
-		return false
-	}
-
-	return true
+	return &s, nil
 }
 
-// GetCurrentUser returns the current user ID and username
-func GetCurrentUser(r *http.Request) (userID int, username string, ok bool) {
-	session, err := Store.Get(r, "forum-session")
-	if err != nil {
-		return 0, "", false
-	}
-
-	userID, ok = session.Values["user_id"].(int)
-	if !ok {
-		return 0, "", false
-	}
-
-	username, ok = session.Values["username"].(string)
-	return userID, username, ok
+func DeleteSession(db *sql.DB, query string, token string) error {
+	_, err := db.Exec(query, token)
+	return err
 }
