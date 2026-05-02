@@ -103,6 +103,7 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/reactions", handle.React)
 	http.HandleFunc("/logout", handle.Logout)
 
 	fmt.Println("Server running at http://localhost:8000")
