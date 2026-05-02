@@ -1,0 +1,121 @@
+{{define "post.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{.Post.Title}} - Forum</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-sky-50 min-h-screen">
+
+  <nav class="bg-white shadow px-6 py-3 flex justify-between items-center">
+    <a href="/" class="text-2xl font-bold text-sky-600">Forum</a>
+    <div class="flex gap-3 items-center">
+      {{if .User}}
+        <span class="text-gray-600">👤 {{.User.Username}}</span>
+        <a href="/logout" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200">Logout</a>
+      {{else}}
+        <a href="/login" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">Login</a>
+        <a href="/register" class="bg-white border border-sky-500 text-sky-500 px-4 py-2 rounded-lg hover:bg-sky-50">Register</a>
+      {{end}}
+    </div>
+  </nav>
+
+  <div class="max-w-3xl mx-auto p-6">
+
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">{{.Post.Title}}</h1>
+      <p class="text-sm text-gray-500 mb-4">By <strong>{{.Post.Username}}</strong> &bull; {{formatDate .Post.CreatedAt}}</p>
+      <div class="text-gray-700 whitespace-pre-wrap mb-6">{{.Post.Content}}</div>
+
+      <div class="flex gap-4 border-t pt-4">
+        {{if .User}}
+        <form method="POST" action="/react" class="inline">
+          <input type="hidden" name="target_type" value="post"/>
+          <input type="hidden" name="target_id" value="{{.Post.Id}}"/>
+          <input type="hidden" name="type" value="like"/>
+          <button type="submit" class="bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200">
+            👍 {{.Post.Likes}}
+          </button>
+        </form>
+        <form method="POST" action="/react" class="inline">
+          <input type="hidden" name="target_type" value="post"/>
+          <input type="hidden" name="target_id" value="{{.Post.Id}}"/>
+          <input type="hidden" name="type" value="dislike"/>
+          <button type="submit" class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200">
+            👎 {{.Post.Dislikes}}
+          </button>
+        </form>
+        {{else}}
+        <span class="text-gray-500 text-sm">👍 {{.Post.Likes}} &bull; 👎 {{.Post.Dislikes}}</span>
+        {{end}}
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6 mb-6">
+      <h2 class="text-xl font-bold text-gray-700 mb-4">Comments ({{len .Comments}})</h2>
+
+      {{if .Error}}
+      <div class="bg-red-100 text-red-600 px-4 py-2 rounded-lg mb-4">{{.Error}}</div>
+      {{end}}
+
+      {{range .Comments}}
+      <div class="border-b pb-4 mb-4">
+        <p class="text-sm text-gray-500"><strong>{{.Username}}</strong> &bull; {{formatDate .CreatedAt}}</p>
+        <p class="text-gray-700 mt-1">{{.Content}}</p>
+        <div class="flex gap-3 mt-2">
+          {{if $.User}}
+          <form method="POST" action="/react" class="inline">
+            <input type="hidden" name="target_type" value="comment"/>
+            <input type="hidden" name="target_id" value="{{.Id}}"/>
+            <input type="hidden" name="post_id" value="{{$.Post.Id}}"/>
+            <input type="hidden" name="type" value="like"/>
+            <button type="submit" class="text-sm bg-green-50 text-green-700 px-2 py-0.5 rounded hover:bg-green-100">
+              👍 {{.Likes}}
+            </button>
+          </form>
+          <form method="POST" action="/react" class="inline">
+            <input type="hidden" name="target_type" value="comment"/>
+            <input type="hidden" name="target_id" value="{{.Id}}"/>
+            <input type="hidden" name="post_id" value="{{$.Post.Id}}"/>
+            <input type="hidden" name="type" value="dislike"/>
+            <button type="submit" class="text-sm bg-red-50 text-red-700 px-2 py-0.5 rounded hover:bg-red-100">
+              👎 {{.Dislikes}}
+            </button>
+          </form>
+          {{else}}
+          <span class="text-sm text-gray-400">👍 {{.Likes}} &bull; 👎 {{.Dislikes}}</span>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+
+      {{if not .Comments}}
+      <p class="text-gray-500 text-sm">No comments yet. {{if .User}}Be the first!{{end}}</p>
+      {{end}}
+    </div>
+
+    {{if .User}}
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-700 mb-3">Add a Comment</h2>
+      <form method="POST" action="/comment" class="space-y-3">
+        <input type="hidden" name="post_id" value="{{.Post.Id}}"/>
+        <textarea name="content" placeholder="Write your comment..." required
+          class="w-full p-3 border rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+        <button type="submit"
+          class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600">
+          Post Comment
+        </button>
+      </form>
+    </div>
+    {{else}}
+    <div class="bg-white rounded-xl shadow p-4 text-center text-gray-500">
+      <a href="/login" class="text-sky-500 hover:underline">Login</a> to post a comment.
+    </div>
+    {{end}}
+  </div>
+
+</body>
+</html>
+{{end}}
