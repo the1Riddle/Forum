@@ -75,6 +75,15 @@ func main() {
 		if r.Me
 	}
 	**/
+	http.HandleFunc("/comments", handlers.ServeCommentsPage)
+
+	// Comments API endpoints
+	http.HandleFunc("/api/comments/create", handlers.CreateCommentHandler)
+	http.HandleFunc("/api/comments/get", handlers.GetCommentsHandler)
+	http.HandleFunc("/api/comments/update", handlers.UpdateCommentHandler)
+	http.HandleFunc("/api/comments/delete", handlers.DeleteCommentHandler)
+	http.HandleFunc("/api/comments/like", handlers.LikeCommentHandler)
+	http.HandleFunc("/api/comments/dislike", handlers.DislikeCommentHandler)
 
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
