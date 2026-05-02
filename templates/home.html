@@ -66,12 +66,25 @@
         <div class="flex gap-4 mt-3 text-sm text-gray-500">
           <span>👍 {{.Likes}}</span>
           <span>👎 {{.Dislikes}}</span>
-          <a href="/post?id={{.Id}}" class="text-sky-500 hover:underline ml-auto">Read more →</a>
+          <button onclick="toggleComments('{{.Id}}')" class="text-sky-500 hover:underline ml-auto cursor-pointer">💬 Show Comments</button>
         </div>
+        <div id="comments-{{.Id}}" class="mt-4 hidden"></div>
       </div>
       {{end}}
     </main>
   </div>
+
+  <script>
+    function toggleComments(postId) {
+      const container = document.getElementById('comments-' + postId);
+      if (container.innerHTML === '') {
+        container.innerHTML = '<iframe src="/comments?postId=' + postId + '" width="100%" height="500" frameborder="0" class="rounded-lg"></iframe>';
+        container.classList.remove('hidden');
+      } else {
+        container.classList.toggle('hidden');
+      }
+    }
+  </script>
 
 </body>
 </html>

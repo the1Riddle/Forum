@@ -84,6 +84,8 @@ func main() {
 	http.HandleFunc("/api/comments/delete", handlers.DeleteCommentHandler)
 	http.HandleFunc("/api/comments/like", handlers.LikeCommentHandler)
 	http.HandleFunc("/api/comments/dislike", handlers.DislikeCommentHandler)
+	http.HandleFunc("/post/new", handle.NewPostForm)
+	http.HandleFunc("/api/posts/create", handle.CreatePost)
 
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
