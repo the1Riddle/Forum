@@ -21,11 +21,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/**
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	h.Tmpl.ExecuteTemplate(w, "home.html", map[string]interface{}{
 		"User": h.currentUser(r),
 	})
 }
+	**/
 
 func (h *Handler) ShowRegister(w http.ResponseWriter, r *http.Request) {
 	h.Tmpl.ExecuteTemplate(w, "register.html", map[string]interface{}{

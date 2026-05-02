@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Forum</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./static/font-awesome.css">
 </head>
 <body class="bg-sky-50 min-h-screen">
 
@@ -66,25 +65,12 @@
         <div class="flex gap-4 mt-3 text-sm text-gray-500">
           <span>👍 {{.Likes}}</span>
           <span>👎 {{.Dislikes}}</span>
-          <button onclick="toggleComments('{{.Id}}')" class="text-sky-500 hover:underline ml-auto cursor-pointer">💬 Show Comments</button>
+          <a href="/post?id={{.Id}}" class="text-sky-500 hover:underline ml-auto">Read more →</a>
         </div>
-        <div id="comments-{{.Id}}" class="mt-4 hidden"></div>
       </div>
       {{end}}
     </main>
   </div>
-
-  <script>
-    function toggleComments(postId) {
-      const container = document.getElementById('comments-' + postId);
-      if (container.innerHTML === '') {
-        container.innerHTML = '<iframe src="/comments?postId=' + postId + '" width="100%" height="500" frameborder="0" class="rounded-lg"></iframe>';
-        container.classList.remove('hidden');
-      } else {
-        container.classList.toggle('hidden');
-      }
-    }
-  </script>
 
 </body>
 </html>

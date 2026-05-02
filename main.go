@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"os"
 	"log"
 	"net/http"
 
@@ -22,16 +23,24 @@ func main() {
 		log.Fatal("Failed to load queries:", err)
 	}
 
-	if _, err := db.Exec(queries.InitializeDB); err != nil {
-		log.Fatal("Failed to initialize database:", err)
-	}
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Println("Database not found, initializing...")
+			if _, err = db.Exec(queries.InitializeDB); err != nil {
+				log.Fatal("Failed to initialize database:", err)
+			}
+			if _, err = db.Exec(queries.SeedCategories); err != nil {
+				log.Println("Warning: could not seed categories:", err)
+			}
+		} else {
+			log.Fatal("Error checking database file:", err)
+			return
+		}
 
-	if _, err := db.Exec(queries.SeedCategories); err != nil {
-		log.Println("Warning: could not seed categories:", err)
 	}
 
 	// or from 123, above this lol //  just to update
-	// that now i have checked the above code.
+	// that now i have checked the above code..
 
 	funcMap := template.FuncMap{
 		"formatDate": uitime.FormatDate,
@@ -76,11 +85,6 @@ func main() {
 	}
 	**/
 
-	// Comments API endpoints
-	http.HandleFunc("/comment", handle.AddComment)
-	http.HandleFunc("/post/new", handle.NewPostForm)
-	http.HandleFunc("/api/posts/create", handle.CreatePost)
-
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			handle.Register(w, r)
@@ -97,8 +101,18 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/reactions", handle.React)
+	http.HandleFunc("/post/new", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			handle.CreatPost(w, r)
+		} else {
+			handle.CreatPostPage(w, r)
+		}
+	})
+
+	http.HandleFunc("/post", handle.ViewPost)
 	http.HandleFunc("/logout", handle.Logout)
+	http.HandleFunc("/reactions", handle.React)
+	http.HandleFunc("/comment", handle.AddComment)
 
 	fmt.Println("Server running at http://localhost:8000")
 	if err := http.ListenAndServe(":8000", nil); err != nil {
