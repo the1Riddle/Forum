@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"html/template"
+	"net/http"
 
 	"forum/src/data"
 )
@@ -21,4 +22,8 @@ type Handler struct {
 
 func NewHandler(db *sql.DB, queries *data.Queries, tmpl *template.Template) *Handler {
 	return &Handler{DB: db, Queries: queries, Tmpl: tmpl}
+}
+
+func BackToHome(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
