@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	//"log"
+	"log"
 
 	"forum/src/data"
 )
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
+		log.Printf("ERROR: Not found path: %s %d", r.URL.Path, http.StatusNotFound)
 		http.NotFound(w, r)
 		return
 	}
@@ -27,16 +28,20 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case category != "":
 		posts, err = data.GetPostsByCategory(h.DB, h.Queries.FilterPostsByCategory, category)
+		log.Printf("INFO: Filtering posts by category: %s %d", category, http.StatusOk)
 	case filter == "my" && user != nil:
 		posts, err = data.GetUserPosts(h.DB, h.Queries.GetUserPosts, user.Id)
+		log.Printf("INFO: Filtering posts by user: %s %d", user.Username, http.StatusOk)
 	case filter == "liked" && user != nil:
 		posts, err = data.GetLikedPosts(h.DB, h.Queries.GetLikedPosts, user.Id)
+		log.Printf("INFO: Filtering posts liked by user: %s %d", user.Username, http.StatusOk)
 	default:
 		posts, err = data.GetPosts(h.DB, h.Queries.GetPosts)
 	}
 
 	if err != nil {
 		http.Error(w, "Error loading posts", http.StatusInternalServerError)
+		log.Printf("ERROR: Failed to load posts: %v %d", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -58,6 +63,7 @@ func (h *Handler) CreatPostPage(w http.ResponseWriter, r *http.Request) {
 	categories, err := data.GetCategories(h.DB, h.Queries.GetCategories)
 
 	if err != nil {
+		log.Printf("ERROR: Failed to load categories: %v %d", err, http.StatusInternalServerError)
 		panic("something might have happened")
 	}
 	h.Tmpl.ExecuteTemplate(w, "create_post.html", data.CreatePostData{
@@ -85,6 +91,7 @@ func (h *Handler) CreatPost(w http.ResponseWriter, r *http.Request) {
 	if postTitle == "" || postContent == "" {
 		categories, err := data.GetCategories(h.DB, h.Queries.GetCategories)
 		if err != nil {
+			log.Printf("ERROR: Failed to load categories: %v %d", err, http.StatusInternalServerError)
 			panic("something might have happened")
 		}
 		h.Tmpl.ExecuteTemplate(w, "create_post.html", data.CreatePostData{
@@ -97,6 +104,7 @@ func (h *Handler) CreatPost(w http.ResponseWriter, r *http.Request) {
 	postId, err := data.CreatePost(h.DB, h.Queries.CreatPost, user.Id, postTitle, postContent)
 
 	if err != nil {
+		log.Printf("ERROR: Failed to create post: %v %d", err, http.StatusInternalServerError)
 		http.Error(w, "We could not make that post for You", http.StatusInternalServerError)
 		return
 	}
@@ -116,18 +124,21 @@ func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	postID, err := strconv.Atoi(idStr)
 	if err != nil || postID <= 0 {
+		log.Printf("ERROR: Invalid post ID: %s %d", idStr, http.StatusBadRequest)
 		http.NotFound(w, r)
 		return
 	}
 
 	post, err := data.GetPostByID(h.DB, h.Queries.GetPostByID, postID)
 	if err != nil {
+		log.Printf("ERROR: Failed to load post: %v %d", err, http.StatusNotFound)
 		http.NotFound(w, r)
 		return
 	}
 
 	comments, err := data.GetPostComments(h.DB, h.Queries.GetPostComments, postID)
 	if err != nil {
+		log.Printf("ERROR: Failed to load comments: %v %d", err, http.StatusInternalServerError)
 		comments = []data.CommentDetails{}
 	}
 
