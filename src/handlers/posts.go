@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"log"
 
 	"forum/src/data"
 )
@@ -28,13 +28,13 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case category != "":
 		posts, err = data.GetPostsByCategory(h.DB, h.Queries.FilterPostsByCategory, category)
-		log.Printf("INFO: Filtering posts by category: %s %d", category, http.StatusOk)
+		log.Printf("INFO: Filtering posts by category: %s %d", category, http.StatusOK)
 	case filter == "my" && user != nil:
 		posts, err = data.GetUserPosts(h.DB, h.Queries.GetUserPosts, user.Id)
-		log.Printf("INFO: Filtering posts by user: %s %d", user.Username, http.StatusOk)
+		log.Printf("INFO: Filtering posts by user: %s %d", user.Username, http.StatusOK)
 	case filter == "liked" && user != nil:
 		posts, err = data.GetLikedPosts(h.DB, h.Queries.GetLikedPosts, user.Id)
-		log.Printf("INFO: Filtering posts liked by user: %s %d", user.Username, http.StatusOk)
+		log.Printf("INFO: Filtering posts liked by user: %s %d", user.Username, http.StatusOK)
 	default:
 		posts, err = data.GetPosts(h.DB, h.Queries.GetPosts)
 	}
@@ -61,7 +61,6 @@ func (h *Handler) CreatPostPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	categories, err := data.GetCategories(h.DB, h.Queries.GetCategories)
-
 	if err != nil {
 		log.Printf("ERROR: Failed to load categories: %v %d", err, http.StatusInternalServerError)
 		panic("something might have happened")
@@ -70,7 +69,6 @@ func (h *Handler) CreatPostPage(w http.ResponseWriter, r *http.Request) {
 		Categories: categories,
 		User:       user,
 	})
-
 }
 
 func (h *Handler) CreatPost(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +100,6 @@ func (h *Handler) CreatPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	postId, err := data.CreatePost(h.DB, h.Queries.CreatPost, user.Id, postTitle, postContent)
-
 	if err != nil {
 		log.Printf("ERROR: Failed to create post: %v %d", err, http.StatusInternalServerError)
 		http.Error(w, "We could not make that post for You", http.StatusInternalServerError)
@@ -118,7 +115,6 @@ func (h *Handler) CreatPost(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/post?id="+strconv.FormatInt(postId, 10), http.StatusSeeOther)
 }
-
 
 func (h *Handler) ViewPost(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
