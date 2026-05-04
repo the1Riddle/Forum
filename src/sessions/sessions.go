@@ -40,6 +40,18 @@ func GetSessionByToken(db *sql.DB, query string, token string) (*Session, error)
 	return &s, nil
 }
 
+func GetSessionByUserID(db *sql.DB, query string, userID int) (*Session, error) {
+	row := db.QueryRow(query, userID)
+
+	var s Session
+	err := row.Scan(&s.ID, &s.UserID, &s.ExpiresAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s, nil
+}
+
 func DeleteSession(db *sql.DB, query string, token string) error {
 	_, err := db.Exec(query, token)
 	return err

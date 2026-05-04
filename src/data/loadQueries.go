@@ -18,6 +18,7 @@ type Queries struct {
 	GetPostComments        string
 	GetUserByEmail         string
 	GetSessionByToken      string
+	GetSessionByUserID     string
 	DeleteSessionByToken   string
 	ReactToPost            string
 	ReactToComment         string
@@ -31,6 +32,8 @@ type Queries struct {
 	DeleteReactionComment  string
 	GetUserByID            string
 }
+
+/// database --> readfrom file --> store in struct --> use in handlers
 
 func LoadQueries() (*Queries, error) {
 	read := func(name string) (string, error) {
@@ -90,6 +93,10 @@ func LoadQueries() (*Queries, error) {
 		return nil, err
 	}
 	getSessionByToken, err := read("get_session_by_token.sql")
+	if err != nil {
+		return nil, err
+	}
+	getSessionByUserID, err := read("get_session_by_user_id.sql")
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +163,7 @@ func LoadQueries() (*Queries, error) {
 		GetPostComments:        getPostComments,
 		GetUserByEmail:         getUserByEmail,
 		GetSessionByToken:      getSessionByToken,
+		GetSessionByUserID:     getSessionByUserID,
 		DeleteSessionByToken:   deleteSessionByToken,
 		ReactToPost:            reactToPost,
 		ReactToComment:         reactToComment,
