@@ -23,7 +23,7 @@ RUN mkdir -p /app/src/data
 
 COPY --from=builder /app/forum .
 COPY --from=builder /app/templates ./templates
-COPY src/data/myforum.db /app/src/data/myforum.db
+## COPY src/data/myforum.db /app/src/data/myforum.db
 
 EXPOSE 8000
 
