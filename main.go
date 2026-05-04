@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
+	//"os"
 
 	"forum/src/data"
 	"forum/src/handlers"
@@ -23,11 +23,18 @@ func main() {
 		log.Fatal("Failed to load queries:", err)
 	}
 
-	_, _ = db.Exec(queries.InitializeDB)
-	_, _ = db.Exec(queries.SeedCategories)
+	if _, err := db.Exec(queries.InitializeDB); err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
 
-	_, err = os.Stat("./src/data/myforum.db")
-	if err != nil {
+	if _, err := db.Exec(queries.SeedCategories); err != nil {
+		log.Println("Warning: could not seed categories:", err)
+	}
+
+	/**
+	//_, err = os.Stat("./src/data/myforum.db")
+	checkData, _ := os.ReadFile("./src/data/myforum.db")
+	if len(checkData) == 0 {
 		if os.IsNotExist(err) {
 			log.Println("Database not found, initializing...")
 			if _, err = db.Exec(queries.InitializeDB); err != nil {
@@ -41,9 +48,7 @@ func main() {
 			return
 		}
 	}
-
-	// or from 123, above this lol //  just to update
-	// that now i have checked the above code..
+		**/
 
 	funcMap := template.FuncMap{
 		"formatDate": uitime.FormatDate,

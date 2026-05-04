@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"fmt"
 
 	"forum/src/data"
 	"forum/src/middlewares"
@@ -108,6 +109,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session, err := sessions.GetSessionByUserID(h.DB, h.Queries.GetSessionByUserID, user.Id)
+	if err == nil {
+		if session.ExpiresAt.After(time.Now()) {
+			fmt.Println("User already logged in, redirecting to home")
+			http.Redirect(w, r, "/login?error=You+are+already+logged+in", http.StatusSeeOther)
+			return
+		}
+	}
+
 	token, err := sessions.GenerateToken()
 	if err != nil {
 		http.Error(w, "Server error", http.StatusInternalServerError)
@@ -119,6 +129,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
+	
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
