@@ -22,10 +22,10 @@ func GenerateToken() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-func CreateSession(db *sql.DB, query string, token string, userID int) error {
+func CreateSession(db *sql.DB, query string, token string, userID int) (time.Time, error) {
 	expiresAt := time.Now().Add(24 * time.Hour)
 	_, err := db.Exec(query, token, userID, expiresAt)
-	return err
+	return expiresAt, err
 }
 
 func GetSessionByToken(db *sql.DB, query string, token string) (*Session, error) {
