@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"os"
 	"log"
 	"net/http"
+	"os"
 
 	"forum/src/data"
 	"forum/src/handlers"
@@ -23,6 +23,9 @@ func main() {
 		log.Fatal("Failed to load queries:", err)
 	}
 
+	_, _ = db.Exec(queries.InitializeDB)
+
+	_, err = os.Stat("./src/data/myforum.db")
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Println("Database not found, initializing...")
@@ -36,7 +39,6 @@ func main() {
 			log.Fatal("Error checking database file:", err)
 			return
 		}
-
 	}
 
 	// or from 123, above this lol //  just to update
