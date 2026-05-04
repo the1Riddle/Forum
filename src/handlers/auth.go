@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"fmt"
+	"log"
 
 	"forum/src/data"
 	"forum/src/middlewares"
@@ -59,21 +59,25 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != sql.ErrNoRows {
+		log.Printf("ERROR: Failed to check user email: %v Status: %d", err, http.StatusInternalServerError)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
+		log.Printf("ERROR: Failed to hash password: %v Status: %d", err, http.StatusInternalServerError)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
 	if err := data.CreateUser(h.DB, h.Queries.CreatUser, email, username, string(hash)); err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
+			log.Printf("ERROR: Username or email already taken: %v Status: %d", err, http.StatusConflict)
 			http.Redirect(w, r, "/register?error=Username+or+email+already+taken", http.StatusSeeOther)
 			return
 		}
+		log.Printf("ERROR: Failed to create user: %v Status: %d", err, http.StatusInternalServerError)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
@@ -112,20 +116,22 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	session, err := sessions.GetSessionByUserID(h.DB, h.Queries.GetSessionByUserID, user.Id)
 	if err == nil {
 		if session.ExpiresAt.After(time.Now()) {
-			fmt.Println("User already logged in, redirecting to home")
-			http.Redirect(w, r, "/login?error=You+are+already+logged+in", http.StatusSeeOther)
+			log.Printf("ERROR: User already logged in another session UserID: %d Status: %d", user.Id, http.StatusConflict)
+			http.Redirect(w, r, "/login?error=You+are+already+logged+in+another+session", http.StatusSeeOther)
 			return
 		}
 	}
 
 	token, err := sessions.GenerateToken()
 	if err != nil {
+		log.Printf("ERROR: Failed to generate session token: %v Status: %d", err, http.StatusInternalServerError)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
 	expiresAt, err = sessions.CreateSession(h.DB, h.Queries.CreatSession, token, user.Id)
 	if err != nil {
+		log.Printf("ERROR: Failed to create session: %v Status: %d", err, http.StatusInternalServerError)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
