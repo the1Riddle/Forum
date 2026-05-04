@@ -14,10 +14,12 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
+	"time"
 
 	"forum/src/data"
-	"forum/src/sessions"
 	"forum/src/middlewares"
+	"forum/src/sessions"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -86,6 +88,7 @@ func (h *Handler) ShowLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var expiresAt time.Time
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
@@ -111,7 +114,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := sessions.CreateSession(h.DB, h.Queries.CreatSession, token, user.Id); err != nil {
+	expiresAt, err = sessions.CreateSession(h.DB, h.Queries.CreatSession, token, user.Id)
+	if err != nil {
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
@@ -119,7 +123,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    token,
-		//Expires:  expiresAt,
+		Expires:  expiresAt,
 		HttpOnly: true,
 		Path:     "/",
 	})
@@ -141,7 +145,6 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	})
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
-
 
 func (h *Handler) currentUser(r *http.Request) *data.User {
 	return middlewares.GetCurrentUser(r, h.DB, h.Queries)
