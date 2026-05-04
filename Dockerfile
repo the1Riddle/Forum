@@ -19,6 +19,7 @@ FROM alpine:latest
 RUN apk add --no-cache sqlite-libs
 
 WORKDIR /app
+RUN mkdir -p /app/src/data
 
 COPY --from=builder /app/forum .
 COPY --from=builder /app/templates ./templates
