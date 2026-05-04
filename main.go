@@ -24,6 +24,7 @@ func main() {
 	}
 
 	_, _ = db.Exec(queries.InitializeDB)
+	_, _ = db.Exec(queries.SeedCategories)
 
 	_, err = os.Stat("./src/data/myforum.db")
 	if err != nil {
