@@ -23,7 +23,7 @@ WORKDIR /app
 COPY --from=builder /app/forum .
 COPY --from=builder /app/templates ./templates
 
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["./forum"]
 
