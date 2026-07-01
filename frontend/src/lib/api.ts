@@ -15,11 +15,19 @@ export class ApiError extends Error {
 type Options = Omit<RequestInit, "body"> & { body?: unknown; raw?: boolean };
 
 export async function apiFetch<T = unknown>(path: string, opts: Options = {}): Promise<T> {
-  const { body, raw, headers, ...rest } = opts;
+  const { body, raw, headers, signal: userSignal, ...rest } = opts;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10_000);
+  if (userSignal) {
+    userSignal.addEventListener("abort", () => controller.abort(), { once: true });
+  }
+
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
   const init: RequestInit = {
     credentials: "include",
     ...rest,
+    signal: controller.signal,
     headers: {
       ...(isForm ? {} : body !== undefined ? { "Content-Type": "application/json" } : {}),
       Accept: "application/json",
@@ -27,24 +35,28 @@ export async function apiFetch<T = unknown>(path: string, opts: Options = {}): P
     },
     body: isForm ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
   };
-  const res = await fetch(`${API_BASE_URL}${path}`, init);
-  const text = await res.text();
-  let data: unknown = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
+  try {
+    const res = await fetch(`${API_BASE_URL}${path}`, init);
+    const text = await res.text();
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = text;
+      }
     }
+    if (!res.ok) {
+      const msg =
+        (data && typeof data === "object" && "error" in data && (data as { error?: string }).error) ||
+        res.statusText ||
+        "Request failed";
+      throw new ApiError(String(msg), res.status);
+    }
+    return (raw ? (data as T) : (data as T)) as T;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  if (!res.ok) {
-    const msg =
-      (data && typeof data === "object" && "error" in data && (data as { error?: string }).error) ||
-      res.statusText ||
-      "Request failed";
-    throw new ApiError(String(msg), res.status);
-  }
-  return (raw ? (data as T) : (data as T)) as T;
 }
 
 export function resolveAsset(path?: string | null): string | undefined {

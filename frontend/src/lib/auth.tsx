@@ -42,8 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
+    if (typeof window === "undefined") return;
     try {
-      const me = await apiFetch<User>("/api/auth/me");
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), 5000);
+      const me = await apiFetch<User>("/api/auth/me", { signal: controller.signal });
+      clearTimeout(id);
       setUser(me);
     } catch {
       setUser(null);
