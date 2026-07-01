@@ -1,57 +1,139 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppShell } from "@/components/layout/AppShell";
+import { CreatePost } from "@/components/feed/CreatePost";
+import { PostCard } from "@/components/feed/PostCard";
+import { PostSkeleton } from "@/components/feed/PostSkeleton";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
-import { AppShell } from "@/components/AppShell";
-import { PostCard, type Post } from "@/components/PostCard";
-import { PostComposer } from "@/components/PostComposer";
+import { postService, userService, eventService } from "@/services/mockApi";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { PersonRow } from "@/components/social/FollowButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuthStore } from "@/stores/auth";
+import { Plus, TrendingUp, Calendar } from "lucide-react";
+import { relTime } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
-  component: Home,
+  head: () => ({ meta: [{ title: "Home — fakebook" }] }),
+  component: HomePage,
 });
 
-function Home() {
-  const { user, loading } = useAuth();
-  if (loading) return <FullLoader />;
-  if (!user) return <Navigate to="/auth" />;
-  return <Feed />;
-}
-
-function Feed() {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["posts"],
-    queryFn: () => apiFetch<Post[]>("/api/posts"),
-    retry: 1,
-    staleTime: 30_000,
+function HomePage() {
+  const [sort, setSort] = useState<"latest" | "top">("latest");
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["feed", sort],
+    queryFn: () => postService.feed(sort),
   });
+  const { data: suggested = [] } = useQuery({
+    queryKey: ["suggested"],
+    queryFn: () => userService.suggested(5),
+  });
+  const { data: upcoming = [] } = useQuery({
+    queryKey: ["events-upcoming"],
+    queryFn: () => eventService.list("upcoming"),
+  });
+  const me = useAuthStore((s) => s.user);
+
   return (
-    <AppShell>
-      <h1 className="font-display text-4xl uppercase tracking-tighter">The Stream</h1>
-      <PostComposer />
-      {isLoading && <p className="text-sm uppercase tracking-widest text-gray-500">Loading…</p>}
-      {isError && (
-        <div className="brutalist-card p-10 text-center border-red-400">
-          <p className="font-display text-xl uppercase text-red-500">Connection lost</p>
-          <p className="text-sm text-gray-500 mt-2">{(error as Error)?.message || "Could not load posts. Check your connection."}</p>
+    <AppShell rightRail={<RightRail suggested={suggested.slice(0, 4)} events={upcoming.slice(0, 3)} />}>
+      <ActivityRail />
+      <div className="mt-4 space-y-4">
+        <CreatePost />
+
+        <div className="flex items-center gap-1 px-1 pt-1">
+          <Tab label="Latest" active={sort === "latest"} onClick={() => setSort("latest")} />
+          <Tab label="Top" active={sort === "top"} onClick={() => setSort("top")} icon={<TrendingUp className="h-3.5 w-3.5" />} />
+          <div className="flex-1" />
+          {me && (
+            <Link to="/profile/$id" params={{ id: me.id }} className="text-xs text-muted-foreground hover:text-foreground">
+              View profile →
+            </Link>
+          )}
         </div>
-      )}
-      {!isLoading && !isError && data?.length === 0 && (
-        <div className="brutalist-card p-10 text-center">
-          <p className="font-display text-xl uppercase">Silence.</p>
-          <p className="text-sm text-gray-500 mt-2">Be the first to broadcast.</p>
-        </div>
-      )}
-      {!isLoading && data?.map((p) => (
-        <PostCard key={p.id} post={p} />
-      ))}
+
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
+          : posts?.map((p) => <PostCard key={p.id} post={p} />)}
+      </div>
     </AppShell>
   );
 }
 
-function FullLoader() {
+function Tab({ label, active, onClick, icon }: { label: string; active: boolean; onClick: () => void; icon?: React.ReactNode }) {
   return (
-    <div className="min-h-screen grid place-items-center bg-brand-surface">
-      <p className="font-display text-2xl uppercase tracking-tighter">Loading signals…</p>
+    <button
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-sm font-medium transition-colors",
+        active ? "bg-foreground text-background" : "text-muted-foreground hover:bg-accent",
+      )}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function ActivityRail() {
+  const { data: people = [] } = useQuery({
+    queryKey: ["activity-rail"],
+    queryFn: () => userService.listUsers(),
+  });
+  return (
+    <div className="surface-card p-3">
+      <div className="flex gap-3 overflow-x-auto scrollbar-thin pb-1 -mb-1">
+        <div className="shrink-0 w-20 grid place-items-center">
+          <div className="h-14 w-14 rounded-full border-2 border-dashed border-primary/40 grid place-items-center text-primary">
+            <Plus className="h-5 w-5" />
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-1">Your story</div>
+        </div>
+        {people.slice(0, 14).map((u) => (
+          <Link to="/profile/$id" params={{ id: u.id }} key={u.id} className="shrink-0 w-20 text-center group">
+            <div className="h-14 w-14 mx-auto rounded-full p-[2px] bg-gradient-to-br from-primary to-fuchsia-500">
+              <Avatar className="h-full w-full border-2 border-background">
+                <AvatarImage src={u.avatar} alt={u.name} />
+                <AvatarFallback>{u.name[0]}</AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="text-[11px] mt-1 truncate">{u.name.split(" ")[0]}</div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RightRail({ suggested, events }: { suggested: any[]; events: any[] }) {
+  return (
+    <div className="space-y-6">
+      <section>
+        <h3 className="text-sm font-semibold mb-2">Suggested for you</h3>
+        <div className="surface-card divide-y">
+          {suggested.map((u) => (
+            <div key={u.id} className="px-3"><PersonRow userId={u.id} /></div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <Calendar className="h-4 w-4" /> Upcoming events
+        </h3>
+        <div className="surface-card overflow-hidden divide-y">
+          {events.map((e) => (
+            <Link to="/events" key={e.id} className="block p-3 hover:bg-accent/40">
+              <div className="text-xs text-primary font-semibold">{relTime(e.startsAt)} · {e.location}</div>
+              <div className="text-sm font-medium mt-0.5 truncate">{e.title}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{e.attendees} going</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <p className="text-[11px] text-muted-foreground leading-relaxed">
+        © fakebook — built as a demo. All content is fictional.
+      </p>
     </div>
   );
 }

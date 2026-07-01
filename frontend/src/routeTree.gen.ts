@@ -10,20 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as EventsRouteImport } from './routes/events'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GroupsIndexRouteImport } from './routes/groups.index'
-import { Route as ChatIndexRouteImport } from './routes/chat.index'
-import { Route as ProfileUserIdRouteImport } from './routes/profile.$userId'
-import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
-import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
-import { Route as ChatPeerIdRouteImport } from './routes/chat.$peerId'
-import { Route as ChatGroupGroupIdRouteImport } from './routes/chat.group.$groupId'
+import { Route as ProfileIdRouteImport } from './routes/profile.$id'
+import { Route as MessagesIdRouteImport } from './routes/messages.$id'
+import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -31,9 +44,34 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsRoute = GroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -41,136 +79,135 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GroupsIndexRoute = GroupsIndexRouteImport.update({
-  id: '/groups/',
-  path: '/groups/',
+const ProfileIdRoute = ProfileIdRouteImport.update({
+  id: '/profile/$id',
+  path: '/profile/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatIndexRoute = ChatIndexRouteImport.update({
-  id: '/chat/',
-  path: '/chat/',
-  getParentRoute: () => rootRouteImport,
+const MessagesIdRoute = MessagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MessagesRoute,
 } as any)
-const ProfileUserIdRoute = ProfileUserIdRouteImport.update({
-  id: '/profile/$userId',
-  path: '/profile/$userId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostsPostIdRoute = PostsPostIdRouteImport.update({
-  id: '/posts/$postId',
-  path: '/posts/$postId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
-  id: '/groups/$groupId',
-  path: '/groups/$groupId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatPeerIdRoute = ChatPeerIdRouteImport.update({
-  id: '/chat/$peerId',
-  path: '/chat/$peerId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatGroupGroupIdRoute = ChatGroupGroupIdRouteImport.update({
-  id: '/chat/group/$groupId',
-  path: '/chat/group/$groupId',
-  getParentRoute: () => rootRouteImport,
+const GroupsIdRoute = GroupsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => GroupsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/groups': typeof GroupsRouteWithChildren
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/notifications': typeof NotificationsRoute
+  '/register': typeof RegisterRoute
+  '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/chat/$peerId': typeof ChatPeerIdRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/profile/$userId': typeof ProfileUserIdRoute
-  '/chat/': typeof ChatIndexRoute
-  '/groups/': typeof GroupsIndexRoute
-  '/chat/group/$groupId': typeof ChatGroupGroupIdRoute
+  '/groups/$id': typeof GroupsIdRoute
+  '/messages/$id': typeof MessagesIdRoute
+  '/profile/$id': typeof ProfileIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/groups': typeof GroupsRouteWithChildren
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/notifications': typeof NotificationsRoute
+  '/register': typeof RegisterRoute
+  '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/chat/$peerId': typeof ChatPeerIdRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/profile/$userId': typeof ProfileUserIdRoute
-  '/chat': typeof ChatIndexRoute
-  '/groups': typeof GroupsIndexRoute
-  '/chat/group/$groupId': typeof ChatGroupGroupIdRoute
+  '/groups/$id': typeof GroupsIdRoute
+  '/messages/$id': typeof MessagesIdRoute
+  '/profile/$id': typeof ProfileIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/explore': typeof ExploreRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/groups': typeof GroupsRouteWithChildren
+  '/login': typeof LoginRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/notifications': typeof NotificationsRoute
+  '/register': typeof RegisterRoute
+  '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
-  '/chat/$peerId': typeof ChatPeerIdRoute
-  '/groups/$groupId': typeof GroupsGroupIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/profile/$userId': typeof ProfileUserIdRoute
-  '/chat/': typeof ChatIndexRoute
-  '/groups/': typeof GroupsIndexRoute
-  '/chat/group/$groupId': typeof ChatGroupGroupIdRoute
+  '/groups/$id': typeof GroupsIdRoute
+  '/messages/$id': typeof MessagesIdRoute
+  '/profile/$id': typeof ProfileIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/auth'
+    | '/events'
+    | '/explore'
+    | '/forgot-password'
+    | '/groups'
+    | '/login'
+    | '/messages'
     | '/notifications'
+    | '/register'
+    | '/saved'
     | '/settings'
-    | '/chat/$peerId'
-    | '/groups/$groupId'
-    | '/posts/$postId'
-    | '/profile/$userId'
-    | '/chat/'
-    | '/groups/'
-    | '/chat/group/$groupId'
+    | '/groups/$id'
+    | '/messages/$id'
+    | '/profile/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auth'
-    | '/notifications'
-    | '/settings'
-    | '/chat/$peerId'
-    | '/groups/$groupId'
-    | '/posts/$postId'
-    | '/profile/$userId'
-    | '/chat'
+    | '/events'
+    | '/explore'
+    | '/forgot-password'
     | '/groups'
-    | '/chat/group/$groupId'
+    | '/login'
+    | '/messages'
+    | '/notifications'
+    | '/register'
+    | '/saved'
+    | '/settings'
+    | '/groups/$id'
+    | '/messages/$id'
+    | '/profile/$id'
   id:
     | '__root__'
     | '/'
-    | '/auth'
+    | '/events'
+    | '/explore'
+    | '/forgot-password'
+    | '/groups'
+    | '/login'
+    | '/messages'
     | '/notifications'
+    | '/register'
+    | '/saved'
     | '/settings'
-    | '/chat/$peerId'
-    | '/groups/$groupId'
-    | '/posts/$postId'
-    | '/profile/$userId'
-    | '/chat/'
-    | '/groups/'
-    | '/chat/group/$groupId'
+    | '/groups/$id'
+    | '/messages/$id'
+    | '/profile/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  EventsRoute: typeof EventsRoute
+  ExploreRoute: typeof ExploreRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GroupsRoute: typeof GroupsRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
+  RegisterRoute: typeof RegisterRoute
+  SavedRoute: typeof SavedRoute
   SettingsRoute: typeof SettingsRoute
-  ChatPeerIdRoute: typeof ChatPeerIdRoute
-  GroupsGroupIdRoute: typeof GroupsGroupIdRoute
-  PostsPostIdRoute: typeof PostsPostIdRoute
-  ProfileUserIdRoute: typeof ProfileUserIdRoute
-  ChatIndexRoute: typeof ChatIndexRoute
-  GroupsIndexRoute: typeof GroupsIndexRoute
-  ChatGroupGroupIdRoute: typeof ChatGroupGroupIdRoute
+  ProfileIdRoute: typeof ProfileIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -182,6 +219,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notifications': {
       id: '/notifications'
       path: '/notifications'
@@ -189,11 +240,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups': {
+      id: '/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof GroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -203,71 +289,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/groups/': {
-      id: '/groups/'
-      path: '/groups'
-      fullPath: '/groups/'
-      preLoaderRoute: typeof GroupsIndexRouteImport
+    '/profile/$id': {
+      id: '/profile/$id'
+      path: '/profile/$id'
+      fullPath: '/profile/$id'
+      preLoaderRoute: typeof ProfileIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat/': {
-      id: '/chat/'
-      path: '/chat'
-      fullPath: '/chat/'
-      preLoaderRoute: typeof ChatIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/messages/$id': {
+      id: '/messages/$id'
+      path: '/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof MessagesIdRouteImport
+      parentRoute: typeof MessagesRoute
     }
-    '/profile/$userId': {
-      id: '/profile/$userId'
-      path: '/profile/$userId'
-      fullPath: '/profile/$userId'
-      preLoaderRoute: typeof ProfileUserIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/posts/$postId': {
-      id: '/posts/$postId'
-      path: '/posts/$postId'
-      fullPath: '/posts/$postId'
-      preLoaderRoute: typeof PostsPostIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/groups/$groupId': {
-      id: '/groups/$groupId'
-      path: '/groups/$groupId'
-      fullPath: '/groups/$groupId'
-      preLoaderRoute: typeof GroupsGroupIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/$peerId': {
-      id: '/chat/$peerId'
-      path: '/chat/$peerId'
-      fullPath: '/chat/$peerId'
-      preLoaderRoute: typeof ChatPeerIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/group/$groupId': {
-      id: '/chat/group/$groupId'
-      path: '/chat/group/$groupId'
-      fullPath: '/chat/group/$groupId'
-      preLoaderRoute: typeof ChatGroupGroupIdRouteImport
-      parentRoute: typeof rootRouteImport
+    '/groups/$id': {
+      id: '/groups/$id'
+      path: '/$id'
+      fullPath: '/groups/$id'
+      preLoaderRoute: typeof GroupsIdRouteImport
+      parentRoute: typeof GroupsRoute
     }
   }
 }
 
+interface GroupsRouteChildren {
+  GroupsIdRoute: typeof GroupsIdRoute
+}
+
+const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsIdRoute: GroupsIdRoute,
+}
+
+const GroupsRouteWithChildren =
+  GroupsRoute._addFileChildren(GroupsRouteChildren)
+
+interface MessagesRouteChildren {
+  MessagesIdRoute: typeof MessagesIdRoute
+}
+
+const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesIdRoute: MessagesIdRoute,
+}
+
+const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
+  MessagesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  EventsRoute: EventsRoute,
+  ExploreRoute: ExploreRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  GroupsRoute: GroupsRouteWithChildren,
+  LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
+  RegisterRoute: RegisterRoute,
+  SavedRoute: SavedRoute,
   SettingsRoute: SettingsRoute,
-  ChatPeerIdRoute: ChatPeerIdRoute,
-  GroupsGroupIdRoute: GroupsGroupIdRoute,
-  PostsPostIdRoute: PostsPostIdRoute,
-  ProfileUserIdRoute: ProfileUserIdRoute,
-  ChatIndexRoute: ChatIndexRoute,
-  GroupsIndexRoute: GroupsIndexRoute,
-  ChatGroupGroupIdRoute: ChatGroupGroupIdRoute,
+  ProfileIdRoute: ProfileIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
