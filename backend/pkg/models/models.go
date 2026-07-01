@@ -102,7 +102,8 @@ type GroupMember struct {
 	Status    string    `json:"status"`
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
-	Username  string    `json:"username"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
 	Avatar    string    `json:"avatar"`
 }
 

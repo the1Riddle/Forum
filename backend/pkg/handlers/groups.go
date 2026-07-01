@@ -555,7 +555,7 @@ func (h *GroupHandler) RespondEvent(w http.ResponseWriter, r *http.Request) {
 func (h *GroupHandler) getGroupMembers(groupID int) ([]models.GroupMember, error) {
 	rows, err := h.DB.Query(`
 		SELECT gm.id, gm.group_id, gm.user_id, gm.status, gm.role, gm.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar
+			u.first_name, u.last_name, u.avatar
 		FROM group_members gm
 		JOIN users u ON gm.user_id = u.id
 		WHERE gm.group_id = ? AND gm.status = 'accepted'
@@ -568,7 +568,7 @@ func (h *GroupHandler) getGroupMembers(groupID int) ([]models.GroupMember, error
 	var members []models.GroupMember
 	for rows.Next() {
 		var m models.GroupMember
-		if err := rows.Scan(&m.ID, &m.GroupID, &m.UserID, &m.Status, &m.Role, &m.CreatedAt, &m.Username, &m.Avatar); err != nil {
+		if err := rows.Scan(&m.ID, &m.GroupID, &m.UserID, &m.Status, &m.Role, &m.CreatedAt, &m.FirstName, &m.LastName, &m.Avatar); err != nil {
 			return nil, err
 		}
 		members = append(members, m)

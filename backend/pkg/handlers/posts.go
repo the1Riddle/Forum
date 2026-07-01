@@ -317,7 +317,7 @@ func (h *PostHandler) getPostByID(postID int) (models.Post, error) {
 func (h *PostHandler) getPostComments(postID int) ([]models.Comment, error) {
 	rows, err := h.DB.Query(`
 		SELECT c.id, c.user_id, c.post_id, c.content, c.image, c.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar,
+			u.first_name, u.last_name, COALESCE(u.nickname, ''), u.avatar,
 			COALESCE(l.likes, 0), COALESCE(d.dislikes, 0)
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
@@ -334,7 +334,7 @@ func (h *PostHandler) getPostComments(postID int) ([]models.Comment, error) {
 	var comments []models.Comment
 	for rows.Next() {
 		var c models.Comment
-		if err := rows.Scan(&c.ID, &c.UserID, &c.PostID, &c.Content, &c.Image, &c.CreatedAt, &c.Username, &c.Avatar, &c.Likes, &c.Dislikes); err != nil {
+		if err := rows.Scan(&c.ID, &c.UserID, &c.PostID, &c.Content, &c.Image, &c.CreatedAt, &c.FirstName, &c.LastName, &c.Nickname, &c.Avatar, &c.LikesCount, &c.DislikesCount); err != nil {
 			return nil, err
 		}
 		comments = append(comments, c)

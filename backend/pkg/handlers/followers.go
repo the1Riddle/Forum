@@ -179,7 +179,7 @@ func (h *FollowerHandler) GetPendingRequests(w http.ResponseWriter, r *http.Requ
 	}
 
 	rows, err := h.DB.Query(`
-		SELECT f.id, f.follower_id, f.followee_id, f.status, f.created_at,
+		SELECT f.follower_id as id, f.follower_id, f.followee_id, f.status, f.created_at,
 			u.first_name || ' ' || u.last_name, u.avatar, u.first_name, u.last_name
 		FROM followers f
 		JOIN users u ON f.follower_id = u.id

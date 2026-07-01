@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"forum/pkg/middleware"
 	"forum/pkg/models"
 
 	"github.com/gorilla/websocket"
@@ -281,20 +283,26 @@ func (h *Hub) handleTyping(sender *Client, msg models.WSMessage) {
 }
 
 func (h *Hub) GetChatHistory(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id")
-	if userID == nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userIDVal := r.Context().Value("user_id")
+	if userIDVal == nil {
+		middleware.JSON(w, http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
 		return
 	}
+	userID := userIDVal.(int)
 
-	otherID := r.URL.Query().Get("user_id")
+	otherIDStr := r.URL.Query().Get("user_id")
 	var rows *sql.Rows
 	var err error
 
-	if otherID != "" {
+	if otherIDStr != "" {
+		otherID, convErr := strconv.Atoi(otherIDStr)
+		if convErr != nil {
+			middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid user_id"})
+			return
+		}
 		rows, err = h.DB.Query(`
 			SELECT m.id, m.sender_id, m.receiver_id, m.group_id, m.content, m.created_at,
-				u.first_name || ' ' || u.last_name, u.avatar
+				u.first_name, u.last_name, u.avatar
 			FROM messages m
 			JOIN users u ON m.sender_id = u.id
 			WHERE (m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)
@@ -303,7 +311,7 @@ func (h *Hub) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 	} else {
 		rows, err = h.DB.Query(`
 			SELECT m.id, m.sender_id, m.receiver_id, m.group_id, m.content, m.created_at,
-				u.first_name || ' ' || u.last_name, u.avatar
+				u.first_name, u.last_name, u.avatar
 			FROM messages m
 			JOIN users u ON m.sender_id = u.id
 			WHERE m.sender_id = ? OR m.receiver_id = ?
@@ -312,7 +320,7 @@ func (h *Hub) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, "Failed to get messages", http.StatusInternalServerError)
+		middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to get messages"})
 		return
 	}
 	defer rows.Close()
@@ -320,9 +328,11 @@ func (h *Hub) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 	var messages []models.Message
 	for rows.Next() {
 		var m models.Message
-		if err := rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.GroupID, &m.Content, &m.CreatedAt, &m.Username, &m.Avatar); err != nil {
+		var firstName, lastName string
+		if err := rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.GroupID, &m.Content, &m.CreatedAt, &firstName, &lastName, &m.Avatar); err != nil {
 			continue
 		}
+		m.Username = firstName + " " + lastName
 		messages = append(messages, m)
 	}
 
@@ -330,6 +340,5 @@ func (h *Hub) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 		messages = []models.Message{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(messages)
+	middleware.JSON(w, http.StatusOK, messages)
 }

@@ -193,8 +193,8 @@ func (h *ProfileHandler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
 
 func (h *ProfileHandler) getUserPosts(userID int) ([]models.Post, error) {
 	rows, err := h.DB.Query(`
-		SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar,
+		SELECT p.id, p.user_id, u.first_name, u.last_name, COALESCE(u.nickname, ''), p.title, p.content, p.image, p.privacy, p.created_at,
+			u.avatar,
 			COALESCE(l.likes, 0), COALESCE(d.dislikes, 0),
 			COALESCE(c.comment_count, 0)
 		FROM posts p
@@ -213,7 +213,7 @@ func (h *ProfileHandler) getUserPosts(userID int) ([]models.Post, error) {
 	var posts []models.Post
 	for rows.Next() {
 		var p models.Post
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Username, &p.Avatar, &p.Likes, &p.Dislikes, &p.CommentCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.FirstName, &p.LastName, &p.Nickname, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Avatar, &p.LikesCount, &p.DislikesCount, &p.CommentsCount); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)
