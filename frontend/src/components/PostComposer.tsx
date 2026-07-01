@@ -2,10 +2,13 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import type { Post } from "./PostCard";
 
 type Privacy = "public" | "almost_private" | "private";
 
 export function PostComposer({ groupId }: { groupId?: number }) {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [privacy, setPrivacy] = useState<Privacy>("public");
@@ -41,6 +44,29 @@ export function PostComposer({ groupId }: { groupId?: number }) {
       }
       return apiFetch(endpoint, { method: "POST", body });
     },
+    onMutate: async () => {
+      if (groupId) return;
+      await qc.cancelQueries({ queryKey: ["posts"] });
+      const previous = qc.getQueryData<Post[]>(["posts"]);
+      if (!user) return previous;
+      const optimistic: Post = {
+        id: -Date.now(),
+        user_id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        nickname: user.nickname,
+        avatar: user.avatar,
+        title: title.trim(),
+        content: content.trim(),
+        privacy,
+        created_at: new Date().toISOString(),
+        likes_count: 0,
+        dislikes_count: 0,
+        comments_count: 0,
+      };
+      qc.setQueryData<Post[]>(["posts"], (old) => [optimistic, ...(old ?? [])]);
+      return { previous };
+    },
     onSuccess: () => {
       toast.success("Posted");
       setTitle("");
@@ -50,7 +76,10 @@ export function PostComposer({ groupId }: { groupId?: number }) {
       qc.invalidateQueries({ queryKey: ["posts"] });
       qc.invalidateQueries({ queryKey: ["group", groupId] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(["posts"], ctx.previous);
+      toast.error(e.message);
+    },
   });
 
   return (

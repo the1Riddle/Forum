@@ -12,9 +12,11 @@ export const Route = createFileRoute("/chat/$peerId")({
 function ChatPeer() {
   const { user, loading } = useAuth();
   const { peerId } = useParams({ from: "/chat/$peerId" });
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["profile", peerId],
     queryFn: () => apiFetch<{ profile: User }>(`/api/profile?id=${peerId}`),
+    staleTime: 30_000,
+    retry: 0,
   });
   if (loading) return null;
   if (!user) return <Navigate to="/auth" />;

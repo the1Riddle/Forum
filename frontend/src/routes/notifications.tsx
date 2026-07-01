@@ -31,10 +31,12 @@ const LABELS: Record<string, string> = {
 function NotificationsPage() {
   const { user, loading } = useAuth();
   const qc = useQueryClient();
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => apiFetch<Notif[]>("/api/notifications"),
     enabled: !!user,
+    retry: 1,
+    staleTime: 30_000,
   });
   const markAll = useMutation({
     mutationFn: () => apiFetch("/api/notifications/read?id=all", { method: "POST" }),
@@ -62,6 +64,12 @@ function NotificationsPage() {
           Mark all read
         </button>
       </div>
+      {isError && (
+        <div className="brutalist-card p-6 text-center border-red-400">
+          <p className="text-sm uppercase text-red-500">{(error as Error)?.message || "Could not load notifications."}</p>
+        </div>
+      )}
+      {!isError && (
       <div className="brutalist-card p-2">
         {(data ?? []).length === 0 && (
           <p className="p-6 text-sm uppercase tracking-widest text-gray-500 text-center">Nothing yet.</p>
@@ -86,6 +94,7 @@ function NotificationsPage() {
           ))}
         </ul>
       </div>
+      )}
     </AppShell>
   );
 }

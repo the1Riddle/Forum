@@ -20,10 +20,14 @@ function ChatIndex() {
     queryKey: ["profile", "me"],
     queryFn: () => apiFetch<ProfileResp>("/api/profile"),
     enabled: !!user,
+    staleTime: 30_000,
+    retry: 0,
   });
   const { data: groups } = useQuery({
     queryKey: ["groups"],
     queryFn: () => apiFetch<Array<{ id: number; title: string; role?: string }>>("/api/groups"),
+    staleTime: 30_000,
+    retry: 0,
   });
 
   if (loading) return null;

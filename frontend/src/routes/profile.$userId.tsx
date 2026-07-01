@@ -26,9 +26,11 @@ function ProfilePage() {
   const { user, loading } = useAuth();
   const { userId } = useParams({ from: "/profile/$userId" });
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["profile", userId],
     queryFn: () => apiFetch<ProfileResp>(`/api/profile?id=${userId}`),
+    retry: 1,
+    staleTime: 30_000,
   });
 
   const followMut = useMutation({
@@ -50,9 +52,14 @@ function ProfilePage() {
 
   return (
     <AppShell>
-      {isLoading || !data ? (
-        <p className="uppercase text-sm">Loading…</p>
-      ) : (
+      {isLoading && <p className="uppercase text-sm">Loading…</p>}
+      {isError && (
+        <div className="brutalist-card p-10 text-center border-red-400">
+          <p className="font-display text-xl uppercase text-red-500">User not found</p>
+          <p className="text-sm text-gray-500 mt-2">{(error as Error)?.message || "This profile may not exist."}</p>
+        </div>
+      )}
+      {!isLoading && !isError && data && (
         <>
           <div className="brutalist-card p-8">
             <div className="flex items-start gap-6">

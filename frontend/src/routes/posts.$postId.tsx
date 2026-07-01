@@ -26,9 +26,11 @@ type Comment = {
 function PostPage() {
   const { user, loading } = useAuth();
   const { postId } = useParams({ from: "/posts/$postId" });
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["post", postId],
     queryFn: () => apiFetch<{ post: Post; comments: Comment[] }>(`/api/posts/get?id=${postId}`),
+    retry: 1,
+    staleTime: 30_000,
   });
 
   if (loading) return null;
@@ -37,6 +39,12 @@ function PostPage() {
   return (
     <AppShell>
       {isLoading && <p className="uppercase text-sm">Loading…</p>}
+      {isError && (
+        <div className="brutalist-card p-10 text-center border-red-400">
+          <p className="font-display text-xl uppercase text-red-500">Post not found</p>
+          <p className="text-sm text-gray-500 mt-2">{(error as Error)?.message || "This post may have been removed."}</p>
+        </div>
+      )}
       {data && (
         <>
           <PostCard post={data.post} />

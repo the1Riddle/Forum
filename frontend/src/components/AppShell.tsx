@@ -21,6 +21,8 @@ export function AppShell({ children, right }: { children: ReactNode; right?: Rea
     queryFn: () => apiFetch<{ unread_count: number }>("/api/notifications/unread-count"),
     refetchInterval: 20000,
     enabled: !!user,
+    staleTime: 10_000,
+    retry: 0,
   });
 
   return (
@@ -84,6 +86,8 @@ function LeftRail() {
   const { data: groups } = useQuery({
     queryKey: ["groups"],
     queryFn: () => apiFetch<Array<{ id: number; title: string }>>("/api/groups"),
+    staleTime: 30_000,
+    retry: 0,
   });
   if (!user) return null;
   return (
@@ -139,6 +143,8 @@ function RightRail() {
   const { data: pending } = useQuery({
     queryKey: ["followers", "pending"],
     queryFn: () => apiFetch<Array<{ id: number; first_name: string; last_name: string; avatar?: string }>>("/api/followers/pending"),
+    staleTime: 15_000,
+    retry: 0,
   });
   return (
     <>

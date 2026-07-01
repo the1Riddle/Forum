@@ -36,9 +36,11 @@ function GroupPage() {
   const { groupId } = useParams({ from: "/groups/$groupId" });
   const qc = useQueryClient();
   const id = Number(groupId);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["group", id],
     queryFn: () => apiFetch<GroupResp>(`/api/groups/get?id=${id}`),
+    retry: 1,
+    staleTime: 30_000,
   });
 
   const join = useMutation({
@@ -52,13 +54,26 @@ function GroupPage() {
   if (loading) return null;
   if (!user) return <Navigate to="/auth" />;
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <AppShell>
         <p className="uppercase text-sm">Loading…</p>
       </AppShell>
     );
   }
+
+  if (isError) {
+    return (
+      <AppShell>
+        <div className="brutalist-card p-10 text-center border-red-400">
+          <p className="font-display text-xl uppercase text-red-500">Group not found</p>
+          <p className="text-sm text-gray-500 mt-2">{(error as Error)?.message || "This group may have been removed."}</p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!data) return null;
 
   return (
     <AppShell>

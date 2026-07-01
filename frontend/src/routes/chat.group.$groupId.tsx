@@ -15,6 +15,8 @@ function GroupChat() {
   const { data } = useQuery({
     queryKey: ["group", Number(groupId)],
     queryFn: () => apiFetch<{ group: { title: string } }>(`/api/groups/get?id=${groupId}`),
+    staleTime: 30_000,
+    retry: 0,
   });
   if (loading) return null;
   if (!user) return <Navigate to="/auth" />;

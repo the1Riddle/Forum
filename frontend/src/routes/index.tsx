@@ -18,22 +18,30 @@ function Home() {
 }
 
 function Feed() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["posts"],
     queryFn: () => apiFetch<Post[]>("/api/posts"),
+    retry: 1,
+    staleTime: 30_000,
   });
   return (
     <AppShell>
       <h1 className="font-display text-4xl uppercase tracking-tighter">The Stream</h1>
       <PostComposer />
       {isLoading && <p className="text-sm uppercase tracking-widest text-gray-500">Loading…</p>}
-      {data?.length === 0 && (
+      {isError && (
+        <div className="brutalist-card p-10 text-center border-red-400">
+          <p className="font-display text-xl uppercase text-red-500">Connection lost</p>
+          <p className="text-sm text-gray-500 mt-2">{(error as Error)?.message || "Could not load posts. Check your connection."}</p>
+        </div>
+      )}
+      {!isLoading && !isError && data?.length === 0 && (
         <div className="brutalist-card p-10 text-center">
           <p className="font-display text-xl uppercase">Silence.</p>
           <p className="text-sm text-gray-500 mt-2">Be the first to broadcast.</p>
         </div>
       )}
-      {(data ?? []).map((p) => (
+      {!isLoading && data?.map((p) => (
         <PostCard key={p.id} post={p} />
       ))}
     </AppShell>

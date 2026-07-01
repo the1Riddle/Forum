@@ -24,9 +24,11 @@ function GroupsPage() {
   const qc = useQueryClient();
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["groups"],
     queryFn: () => apiFetch<Group[]>("/api/groups"),
+    staleTime: 30_000,
+    retry: 0,
   });
   const create = useMutation({
     mutationFn: () => apiFetch("/api/groups/create", { method: "POST", body: { title, description: desc } }),
@@ -60,6 +62,12 @@ function GroupsPage() {
           Create
         </button>
       </form>
+      {isError && (
+        <div className="brutalist-card p-6 text-center border-red-400">
+          <p className="text-sm uppercase text-red-500">{(error as Error)?.message || "Could not load groups."}</p>
+        </div>
+      )}
+      {!isError && (
       <div className="grid gap-4">
         {(data ?? []).map((g) => (
           <Link
@@ -82,6 +90,7 @@ function GroupsPage() {
           </Link>
         ))}
       </div>
+      )}
     </AppShell>
   );
 }
