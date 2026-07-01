@@ -64,7 +64,7 @@ func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		Nickname:       user.Nickname,
 		AboutMe:        user.AboutMe,
 		IsPublic:       user.IsPublic,
-		FollowerCount:  followerCount,
+		FollowersCount: followerCount,
 		FollowingCount: followingCount,
 		PostCount:      postCount,
 	}

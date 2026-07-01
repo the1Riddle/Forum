@@ -239,8 +239,8 @@ func (h *PostHandler) canViewPost(user *models.User, post models.Post) bool {
 
 func (h *PostHandler) getAllPosts(user *models.User) ([]models.Post, error) {
 	query := `
-		SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar,
+		SELECT p.id, p.user_id, u.first_name, u.last_name, COALESCE(u.nickname, ''), p.title, p.content, p.image, p.privacy, p.created_at,
+			u.avatar,
 			COALESCE(l.likes, 0), COALESCE(d.dislikes, 0),
 			COALESCE(c.comment_count, 0)
 		FROM posts p
@@ -276,8 +276,8 @@ func (h *PostHandler) getAllPosts(user *models.User) ([]models.Post, error) {
 
 func (h *PostHandler) getPostsByUser(userID int) ([]models.Post, error) {
 	rows, err := h.DB.Query(`
-		SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar,
+		SELECT p.id, p.user_id, u.first_name, u.last_name, COALESCE(u.nickname, ''), p.title, p.content, p.image, p.privacy, p.created_at,
+			u.avatar,
 			COALESCE(l.likes, 0), COALESCE(d.dislikes, 0),
 			COALESCE(c.comment_count, 0)
 		FROM posts p
@@ -298,8 +298,8 @@ func (h *PostHandler) getPostsByUser(userID int) ([]models.Post, error) {
 
 func (h *PostHandler) getPostByID(postID int) (models.Post, error) {
 	row := h.DB.QueryRow(`
-		SELECT p.id, p.user_id, p.title, p.content, p.image, p.privacy, p.created_at,
-			u.first_name || ' ' || u.last_name, u.avatar,
+		SELECT p.id, p.user_id, u.first_name, u.last_name, COALESCE(u.nickname, ''), p.title, p.content, p.image, p.privacy, p.created_at,
+			u.avatar,
 			COALESCE(l.likes, 0), COALESCE(d.dislikes, 0),
 			COALESCE(c.comment_count, 0)
 		FROM posts p
@@ -310,7 +310,7 @@ func (h *PostHandler) getPostByID(postID int) (models.Post, error) {
 		WHERE p.id = ?
 	`, postID)
 	var p models.Post
-	err := row.Scan(&p.ID, &p.UserID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Username, &p.Avatar, &p.Likes, &p.Dislikes, &p.CommentCount)
+	err := row.Scan(&p.ID, &p.UserID, &p.FirstName, &p.LastName, &p.Nickname, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Avatar, &p.LikesCount, &p.DislikesCount, &p.CommentsCount)
 	return p, err
 }
 
@@ -346,7 +346,7 @@ func scanPosts(rows *sql.Rows) ([]models.Post, error) {
 	var posts []models.Post
 	for rows.Next() {
 		var p models.Post
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Username, &p.Avatar, &p.Likes, &p.Dislikes, &p.CommentCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.FirstName, &p.LastName, &p.Nickname, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.CreatedAt, &p.Avatar, &p.LikesCount, &p.DislikesCount, &p.CommentsCount); err != nil {
 			return nil, err
 		}
 		posts = append(posts, p)

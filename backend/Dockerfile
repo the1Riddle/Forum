@@ -24,6 +24,6 @@ COPY --from=builder /app/pkg/db/migrations/sqlite ./pkg/db/migrations/sqlite
 
 RUN mkdir -p uploads data
 
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["./server"]

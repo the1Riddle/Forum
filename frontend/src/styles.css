@@ -1,0 +1,100 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-black: #050505;
+  --color-brand-acid: #dfff5e;
+  --color-brand-orange: #ff4d00;
+  --color-brand-surface: #f2f2f2;
+
+  --color-background: var(--brand-surface);
+  --color-foreground: var(--brand-black);
+  --color-card: #ffffff;
+  --color-card-foreground: var(--brand-black);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--brand-black);
+  --color-primary: var(--brand-black);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--brand-acid);
+  --color-secondary-foreground: var(--brand-black);
+  --color-muted: #e5e5e5;
+  --color-muted-foreground: #6b6b6b;
+  --color-accent: var(--brand-orange);
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #d40000;
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--brand-black);
+  --color-input: var(--brand-black);
+  --color-ring: var(--brand-black);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+}
+
+:root {
+  --brand-black: #050505;
+  --brand-acid: #dfff5e;
+  --brand-orange: #ff4d00;
+  --brand-surface: #f2f2f2;
+  --radius: 0px;
+}
+
+@utility brutalist-card {
+  border: 2px solid var(--brand-black);
+  box-shadow: 6px 6px 0 0 var(--brand-black);
+  background: #ffffff;
+}
+
+@utility brutalist-card-dark {
+  border: 2px solid var(--brand-black);
+  box-shadow: 6px 6px 0 0 var(--brand-black);
+  background: var(--brand-black);
+  color: #ffffff;
+}
+
+@utility brutalist-btn {
+  border: 2px solid var(--brand-black);
+  box-shadow: 3px 3px 0 0 var(--brand-black);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--brand-black);
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility brutalist-input {
+  border: 2px solid var(--brand-black);
+  background: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  outline: none;
+  &:focus {
+    box-shadow: 3px 3px 0 0 var(--brand-black);
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--brand-surface);
+    color: var(--brand-black);
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}

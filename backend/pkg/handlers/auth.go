@@ -198,7 +198,7 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 		Nickname:       user.Nickname,
 		AboutMe:        user.AboutMe,
 		IsPublic:       user.IsPublic,
-		FollowerCount:  followerCount,
+		FollowersCount: followerCount,
 		FollowingCount: followingCount,
 	})
 }

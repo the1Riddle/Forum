@@ -17,17 +17,17 @@ type User struct {
 }
 
 type UserPublic struct {
-	ID          int    `json:"id"`
-	Email       string `json:"email"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Avatar      string `json:"avatar"`
-	Nickname    string `json:"nickname"`
-	AboutMe     string `json:"about_me"`
-	IsPublic    bool   `json:"is_public"`
-	FollowerCount int  `json:"follower_count"`
-	FollowingCount int `json:"following_count"`
-	PostCount   int    `json:"post_count"`
+	ID              int    `json:"id"`
+	Email           string `json:"email"`
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	Avatar          string `json:"avatar"`
+	Nickname        string `json:"nickname"`
+	AboutMe         string `json:"about_me"`
+	IsPublic        bool   `json:"is_public"`
+	FollowersCount  int    `json:"followers_count"`
+	FollowingCount  int    `json:"following_count"`
+	PostCount       int    `json:"post_count"`
 }
 
 type Session struct {
@@ -37,18 +37,20 @@ type Session struct {
 }
 
 type Post struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	Image     string    `json:"image"`
-	Privacy   string    `json:"privacy"`
-	CreatedAt time.Time `json:"created_at"`
-	Username  string    `json:"username"`
-	Avatar    string    `json:"avatar"`
-	Likes     int       `json:"likes"`
-	Dislikes  int       `json:"dislikes"`
-	CommentCount int    `json:"comment_count"`
+	ID             int       `json:"id"`
+	UserID         int       `json:"user_id"`
+	FirstName      string    `json:"first_name"`
+	LastName       string    `json:"last_name"`
+	Nickname       string    `json:"nickname"`
+	Title          string    `json:"title"`
+	Content        string    `json:"content"`
+	Image          string    `json:"image"`
+	Privacy        string    `json:"privacy"`
+	CreatedAt      time.Time `json:"created_at"`
+	Avatar         string    `json:"avatar"`
+	LikesCount     int       `json:"likes_count"`
+	DislikesCount  int       `json:"dislikes_count"`
+	CommentsCount  int       `json:"comments_count"`
 }
 
 type PostPrivacyUser struct {
@@ -57,16 +59,18 @@ type PostPrivacyUser struct {
 }
 
 type Comment struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
-	PostID    int       `json:"post_id"`
-	Content   string    `json:"content"`
-	Image     string    `json:"image"`
-	CreatedAt time.Time `json:"created_at"`
-	Username  string    `json:"username"`
-	Avatar    string    `json:"avatar"`
-	Likes     int       `json:"likes"`
-	Dislikes  int       `json:"dislikes"`
+	ID            int       `json:"id"`
+	UserID        int       `json:"user_id"`
+	PostID        int       `json:"post_id"`
+	Content       string    `json:"content"`
+	Image         string    `json:"image"`
+	CreatedAt     time.Time `json:"created_at"`
+	FirstName     string    `json:"first_name"`
+	LastName      string    `json:"last_name"`
+	Nickname      string    `json:"nickname"`
+	Avatar        string    `json:"avatar"`
+	LikesCount    int       `json:"likes_count"`
+	DislikesCount int       `json:"dislikes_count"`
 }
 
 type Follower struct {
