@@ -1,0 +1,32 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_data:/app/data
+      - uploads_data:/app/uploads
+    environment:
+      - PORT=8080
+      - DB_PATH=/app/data/forum.db
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - BACKEND_URL=http://backend:8080
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  backend_data:
+  uploads_data:
